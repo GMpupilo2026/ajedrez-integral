@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AjedrezIntegral — Aprende, Juega y Mejora tu Ajedrez</title>
+    <meta name="description" content="Portal de ajedrez para todos los niveles. Cursos, tutoriales, artículos y recursos para mejorar tu juego.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'sans-serif'],
+                        'display': ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        'chess-dark': '#0a1628',
+                        'chess-navy': '#102a4c',
+                        'chess-blue': '#1e4d8b',
+                        'chess-royal': '#2563eb',
+                        'chess-sky': '#3b82f6',
+                        'chess-light': '#e0ecf8',
+                        'chess-gold': '#f4c430',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="font-sans bg-chess-dark text-white antialiased">
+
+    <!-- ===== HEADER ===== -->
+    <header id="header" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-chess-navy/90 backdrop-blur-md border-b border-white/10">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 md:h-20">
+                <a href="#" class="flex items-center gap-3 group">
+                    <div class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-chess-royal to-chess-navy rounded-xl flex items-center justify-center shadow-lg shadow-chess-royal/30 group-hover:scale-105 transition-transform">
+                        <svg class="w-6 h-6 md:w-7 md:h-7 text-chess-gold" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C10.8954 2 10 2.89543 10 4C10 4.74028 10.4022 5.38663 11 5.73242V8H7V11H8.6178L7.5 13.5L5.5 12L4 14L5.5 16L7.5 14.5L9 16.5L7 19L9 21L12 18L15 21L17 19L15 16.5L16.5 14.5L18.5 16L20 14L18.5 12L16.5 13.5L15.4 11H17V8H13V5.73242C13.5978 5.38663 14 4.74028 14 4C14 2.89543 13.1046 2 12 2Z"/>
+                        </svg>
+                    </div>
+                    <span class="font-display text-lg md:text-xl font-bold tracking-tight">
+                        Ajedrez<span class="text-chess-sky">Integral</span>
+                    </span>
+                </a>
+
+                <ul class="hidden lg:flex items-center gap-8">
+                    <li><a href="#inicio" class="nav-link active">Inicio</a></li>
+                    <li><a href="#cursos" class="nav-link">Cursos</a></li>
+                    <li><a href="#articulos" class="nav-link">Artículos</a></li>
+                    <li><a href="#tutoriales" class="nav-link">Tutoriales</a></li>
+                    <li><a href="#aperturas" class="nav-link">Aperturas</a></li>
+                    <li><a href="#contacto" class="nav-link">Contacto</a></li>
+                </ul>
+
+                <div class="hidden lg:flex items-center gap-4">
+                    <a href="#" class="text-sm font-medium text-white/80 hover:text-white transition">Iniciar sesión</a>
+                    <a href="#cursos" class="btn-primary">Empezar a aprender</a>
+                </div>
+
+                <button id="mobile-toggle" class="lg:hidden flex flex-col gap-1.5 p-2" aria-label="Menú">
+                    <span class="bar w-6 h-0.5 bg-white rounded transition-all"></span>
+                    <span class="bar w-6 h-0.5 bg-white rounded transition-all"></span>
+                    <span class="bar w-6 h-0.5 bg-white rounded transition-all"></span>
+                </button>
+            </div>
+        </nav>
+
+        <div id="mobile-menu" class="lg:hidden hidden bg-chess-navy border-t border-white/10">
+            <ul class="px-4 py-6 space-y-1">
+                <li><a href="#inicio" class="mobile-link">Inicio</a></li>
+                <li><a href="#cursos" class="mobile-link">Cursos</a></li>
+                <li><a href="#articulos" class="mobile-link">Artículos</a></li>
+                <li><a href="#tutoriales" class="mobile-link">Tutoriales</a></li>
+                <li><a href="#aperturas" class="mobile-link">Aperturas</a></li>
+                <li><a href="#contacto" class="mobile-link">Contacto</a></li>
+                <li class="pt-4 border-t border-white/10 mt-4">
+                    <a href="#" class="block py-2 text-white/80 font-medium">Iniciar sesión</a>
+                    <a href="#cursos" class="btn-primary w-full text-center mt-2">Empezar a aprender</a>
+                </li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- ===== HERO ===== -->
+    <section id="inicio" class="relative min-h-screen flex items-center pt-20 overflow-hidden">
+        <div class="absolute inset-0 z-0">
+            <div class="absolute inset-0 bg-gradient-to-br from-chess-dark via-chess-navy to-chess-blue"></div>
+            <div class="absolute inset-0 bg-pattern opacity-20"></div>
+            <div class="absolute top-1/4 -left-20 w-72 h-72 bg-chess-royal/30 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-1/4 -right-20 w-96 h-96 bg-chess-sky/20 rounded-full blur-3xl"></div>
+        </div>
+
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div class="text-center lg:text-left">
+                    <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-chess-royal/20 border border-chess-royal/40 text-chess-sky text-sm font-medium mb-6">
+                        <span class="w-2 h-2 bg-chess-sky rounded-full animate-pulse"></span>
+                        +10.000 estudiantes aprendiendo
+                    </span>
+                    <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6">
+                        Domina el tablero,<br>
+                        <span class="bg-gradient-to-r from-chess-sky to-chess-royal bg-clip-text text-transparent">eleva tu mente</span>
+                    </h1>
+                    <p class="text-lg text-white/70 mb-8 max-w-xl mx-auto lg:mx-0">
+                        Aprende ajedrez desde cero hasta nivel avanzado con cursos estructurados, tutoriales prácticos y artículos de estrategia. Tu camino hacia la maestría empieza aquí.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                        <a href="#cursos" class="btn-primary text-base px-8 py-4">
+                            Explorar cursos
+                            <svg class="w-5 h-5 inline ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                        </a>
+                        <a href="#tutoriales" class="btn-secondary text-base px-8 py-4">Ver tutoriales gratis</a>
+                    </div>
+                    <div class="grid grid-cols-3 gap-6 mt-12 max-w-md mx-auto lg:mx-0">
+                        <div class="text-center lg:text-left">
+                            <div class="font-display text-3xl font-bold text-chess-sky">50+</div>
+                            <div class="text-sm text-white/50">Cursos</div>
+                        </div>
+                        <div class="text-center lg:text-left">
+                            <div class="font-display text-3xl font-bold text-chess-sky">200+</div>
+                            <div class="text-sm text-white/50">Artículos</div>
+                        </div>
+                        <div class="text-center lg:text-left">
+                            <div class="font-display text-3xl font-bold text-chess-sky">10K+</div>
+                            <div class="text-sm text-white/50">Estudiantes</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hidden lg:flex justify-center">
+                    <div class="relative">
+                        <div class="chess-board rounded-2xl shadow-2xl shadow-chess-royal/30 overflow-hidden">
+                            <div class="grid grid-cols-8 gap-0 aspect-square w-96">
+                                <div class="chess-square light"></div><div class="chess-square dark"></div><div class="chess-square light"></div><div class="chess-square dark"></div><div class="chess-square light"></div><div class="chess-square dark"></div><div class="chess-square light"></div><div class="chess-square dark"></div>
+                                <div class="chess-square dark"></div><div class="chess-square light"></div><div class="chess-square dark"></div><div class="chess-square light"></div><div class="chess-square dark"></div><div class="chess-square light"></div><div class="chess-square dark"></div><div class="chess-square light"></div>
+                                <div class="chess-square light"></div><div class="chess-square dark"></div><div class="chess-square light"></div><div class="chess-square dark"></div><div class="chess-square light"></div><div class="chess-square dark"></div><div class="chess-square light"></div><div class="chess-square dark"></div>
+                                <div class="chess-square dark"></div><div class="chess-square light"></div><div class="chess-square dark"></div><div class="chess-square light"></div><div class="chess-square dark"></div><div class="chess-square light"></div><div class="chess-square dark"></div><div class="chess-square light"></div>
+                                <div class="chess-square light"></div><div class="chess-square dark"></div><div class="chess-square light"></div><div class="chess-square dark"></div><div class="chess-square light"></div><div class="chess-square dark"></div><div class="chess-square light"></div><div class="chess-square dark"></div>
+                                <div class="chess-square dark"></div><div class="chess-square light"></div><div class="chess-square dark"></div><div class="chess-square light"></div><div class="chess-square dark"></div><div class="chess-square light"></div><div class="chess-square dark"></div><div class="chess-square light"></div>
+                                <div class="chess-square light"></div><div class="chess-square dark"></div><div class="chess-square light"></div><div class="chess-square dark"></div><div class="chess-square light"></div><div class="chess-square dark"></div><div class="chess-square light"></div><div class="chess-square dark"></div>
+                                <div class="chess-square dark"></div><div class="chess-square light"></div><div class="chess-square dark"></div><div class="chess-square light"></div><div class="chess-square dark"></div><div class="chess-square light"></div><div class="chess-square dark"></div><div class="chess-square light"></div>
+                            </div>
+                        </div>
+                        <div class="absolute -top-6 -right-6 bg-chess-gold text-chess-dark w-16 h-16 rounded-full flex items-center justify-center text-3xl shadow-xl animate-float">♞</div>
+                        <div class="absolute -bottom-6 -left-6 bg-chess-royal text-white w-16 h-16 rounded-full flex items-center justify-center text-3xl shadow-xl animate-float-delay">♜</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="absolute bottom-0 left-0 right-0 z-10">
+            <svg viewBox="0 0 1440 100" fill="none" preserveAspectRatio="none" class="w-full h-16 md:h-24">
+                <path d="M0 100V40C240 80 480 0 720 20C960 40 1200 80 1440 40V100H0Z" fill="#0a1628"/>
+            </svg>
+        </div>
+    </section>
+
+    <!-- ===== FEATURES BAR ===== -->
+    <section class="py-16 bg-chess-dark relative z-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="feature-card">
+                    <div class="feature-icon">📚</div>
+                    <h3 class="feature-title">Cursos estructurados</h3>
+                    <p class="feature-text">Rutas de aprendizaje desde principiante hasta avanzado, con lecciones progresivas y ejercicios prácticos.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3 class="feature-title">Tutoriales prácticos</h3>
+                    <p class="feature-text">Guías paso a paso sobre aperturas, medio juego y finales, con análisis de partidas reales.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">♟️</div>
+                    <h3 class="feature-title">Artículos de estrategia</h3>
+                    <p class="feature-text">Contenido profundo sobre tácticas, posicionamiento, sacrificios y planificación a largo plazo.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🏆</div>
+                    <h3 class="feature-title">Comunidad activa</h3>
+                    <p class="feature-text">Únete a miles de jugadores, participa en torneos online y comparte tus partidas con la comunidad.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CURSOS DESTACADOS ===== -->
+    <section id="cursos" class="py-20 bg-gradient-to-b from-chess-dark to-chess-navy">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-14">
+                <span class="text-chess-sky font-semibold text-sm uppercase tracking-widest">Cursos destacados</span>
+                <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl font-bold mt-3 mb-4">Empieza tu camino hoy</h2>
+                <p class="text-white/60 max-w-2xl mx-auto">Cursos diseñados por maestros FIDE para que aprendas a tu ritmo, con material descargable y ejercicios interactivos.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <article class="course-card group">
+                    <div class="course-badge bg-chess-royal">Principiante</div>
+                    <div class="course-image bg-gradient-to-br from-chess-blue to-chess-navy">
+                        <span class="text-7xl">♟️</span>
+                    </div>
+                    <div class="course-body">
+                        <div class="flex items-center gap-3 text-xs text-white/40 mb-3">
+                            <span>12 lecciones</span><span>•</span><span>3 horas</span><span>•</span><span>★★★★★</span>
+                        </div>
+                        <h3 class="course-title">Fundamentos del ajedrez</h3>
+                        <p class="course-text">Aprende cómo se mueven las piezas, las reglas básicas, el jaque mate y los principios fundamentales del juego.</p>
+                        <a href="#" class="course-link">Ver curso →</a>
+                    </div>
+                </article>
+
+                <article class="course-card group">
+                    <div class="course-badge bg-chess-sky">Intermedio</div>
+                    <div class="course-image bg-gradient-to-br from-chess-royal to-chess-blue">
+                        <span class="text-7xl">♞</span>
+                    </div>
+                    <div class="course-body">
+                        <div class="flex items-center gap-3 text-xs text-white/40 mb-3">
+                            <span>18 lecciones</span><span>•</span><span>5 horas</span><span>•</span><span>★★★★★</span>
+                        </div>
+                        <h3 class="course-title">Aperturas para ganar</h3>
+                        <p class="course-text">Domina las aperturas más efectivas: Española, Italiana, Siciliana y Defensa Francesa con planes claros.</p>
+                        <a href="#" class="course-link">Ver curso →</a>
+                    </div>
+                </article>
+
+                <article class="course-card group">
+                    <div class="course-badge bg-chess-gold text-chess-dark">Avanzado</div>
+                    <div class="course-image bg-gradient-to-br from-chess-navy to-chess-royal">
+                        <span class="text-7xl">♛</span>
+                    </div>
+                    <div class="course-body">
+                        <div class="flex items-center gap-3 text-xs text-white/40 mb-3">
+                            <span>24 lecciones</span><span>•</span><span>8 horas</span><span>•</span><span>★★★★★</span>
+                        </div>
+                        <h3 class="course-title">Estrategia y táctica avanzada</h3>
+                        <p class="course-text">Profundiza en estructuras de peones, sacrificios posicionales, finales técnicos y planificación estratégica.</p>
+                        <a href="#" class="course-link">Ver curso →</a>
+                    </div>
+                </article>
+            </div>
+
+            <div class="text-center mt-12">
+                <a href="#" class="btn-secondary text-base px-8 py-4">Ver todos los cursos</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== ARTÍCULOS RECIENTES ===== -->
+    <section id="articulos" class="py-20 bg-chess-navy">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-14 gap-4">
+                <div>
+                    <span class="text-chess-sky font-semibold text-sm uppercase tracking-widest">Artículos recientes</span>
+                    <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl font-bold mt-3">Últimas publicaciones</h2>
+                </div>
+                <a href="#" class="text-chess-sky hover:text-chess-light font-medium flex items-center gap-2 transition">
+                    Ver todos
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </a>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <article class="article-card">
+                    <div class="article-image bg-gradient-to-br from-chess-blue to-chess-navy"><span class="text-5xl">🏰</span></div>
+                    <div class="article-body">
+                        <span class="article-tag">Aperturas</span>
+                        <h3 class="article-title">La defensa siciliana: guía completa para jugadores agresivos</h3>
+                        <p class="article-text">La Siciliana es una de las aperturas más populares y dinámicas. Descubre sus variantes principales y cómo usarlas para tomar la iniciativa desde el primer movimiento.</p>
+                        <div class="article-meta"><span>15 ago 2026</span><span>•</span><span>8 min lectura</span></div>
+                    </div>
+                </article>
+                <article class="article-card">
+                    <div class="article-image bg-gradient-to-br from-chess-royal to-chess-blue"><span class="text-5xl">⚔️</span></div>
+                    <div class="article-body">
+                        <span class="article-tag">Táctica</span>
+                        <h3 class="article-title">10 combinaciones tácticas que todo ajedrecista debe conocer</h3>
+                        <p class="article-text">Desde la clavada hasta el rayo X. Repasa los patrones tácticos esenciales que te permitirán ganar partidas y sorprender a tus rivales.</p>
+                        <div class="article-meta"><span>12 ago 2026</span><span>•</span><span>6 min lectura</span></div>
+                    </div>
+                </article>
+                <article class="article-card">
+                    <div class="article-image bg-gradient-to-br from-chess-navy to-chess-royal"><span class="text-5xl">👑</span></div>
+                    <div class="article-body">
+                        <span class="article-tag">Estrategia</span>
+                        <h3 class="article-title">Cómo manejar el centro del tablero como un gran maestro</h3>
+                        <p class="article-text">El control del centro es uno de los principios fundamentales. Aprende a dominar las casillas centrales y construir posiciones sólidas.</p>
+                        <div class="article-meta"><span>10 ago 2026</span><span>•</span><span>10 min lectura</span></div>
+                    </div>
+                </article>
+                <article class="article-card">
+                    <div class="article-image bg-gradient-to-br from-chess-sky to-chess-navy"><span class="text-5xl">♟️</span></div>
+                    <div class="article-body">
+                        <span class="article-tag">Finales</span>
+                        <h3 class="article-title">Finales de torre: la técnica que separa al amateur del experto</h3>
+                        <p class="article-text">El final de torre aparece en el 50% de las partidas. Domina la técnica del puente, la oposición y la regla de Triángulo.</p>
+                        <div class="article-meta"><span>8 ago 2026</span><span>•</span><span>12 min lectura</span></div>
+                    </div>
+                </article>
+                <article class="article-card">
+                    <div class="article-image bg-gradient-to-br from-chess-blue to-chess-royal"><span class="text-5xl">🧠</span></div>
+                    <div class="article-body">
+                        <span class="article-tag">Psicología</span>
+                        <h3 class="article-title">La psicología del ajedrez: cómo mantener la calma bajo presión</h3>
+                        <p class="article-text">El ajedrez no solo es mental sino también emocional. Descubre técnicas para gestionar el tiempo, la ansiedad y los errores.</p>
+                        <div class="article-meta"><span>5 ago 2026</span><span>•</span><span>7 min lectura</span></div>
+                    </div>
+                </article>
+                <article class="article-card">
+                    <div class="article-image bg-gradient-to-br from-chess-navy to-chess-sky"><span class="text-5xl">📜</span></div>
+                    <div class="article-body">
+                        <span class="article-tag">Historia</span>
+                        <h3 class="article-title">Las 10 partidas más brillantes de la historia del ajedrez</h3>
+                        <p class="article-text">Desde la Inmortal de Anderssen hasta las joyas de Kasparov y Carlsen. Un recorrido por las partidas que marcaron la historia.</p>
+                        <div class="article-meta"><span>2 ago 2026</span><span>•</span><span>15 min lectura</span></div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== TUTORIALES ===== -->
+    <section id="tutoriales" class="py-20 bg-gradient-to-b from-chess-navy to-chess-dark">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-14">
+                <span class="text-chess-sky font-semibold text-sm uppercase tracking-widest">Tutoriales gratis</span>
+                <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl font-bold mt-3 mb-4">Aprende con guías paso a paso</h2>
+                <p class="text-white/60 max-w-2xl mx-auto">Tutoriales en vídeo y texto para que puedas practicar cada concepto a tu ritmo.</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="tutorial-card"><div class="tutorial-number">01</div><div class="tutorial-content"><h3 class="tutorial-title">Cómo anotar una partida: el sistema algebraico</h3><p class="tutorial-text">Aprende el sistema de notación algebraica que usan los profesionales para registrar y analizar partidas. Esencial para estudiar y mejorar.</p><a href="#" class="tutorial-link">Leer tutorial →</a></div></div>
+                <div class="tutorial-card"><div class="tutorial-number">02</div><div class="tutorial-content"><h3 class="tutorial-title">El valor de las piezas: cuándo cambiar y cuándo no</h3><p class="tutorial-text">Entender el valor relativo de las piezas es clave para decidir intercambios. Descubre cómo evaluar cambios según el contexto de la posición.</p><a href="#" class="tutorial-link">Leer tutorial →</a></div></div>
+                <div class="tutorial-card"><div class="tutorial-number">03</div><div class="tutorial-content"><h3 class="tutorial-title">El enroque: cuándo hacerlo y cuándo evitarlo</h3><p class="tutorial-text">El enroque es una jugada fundamental para la seguridad del rey. Aprende los tipos, las reglas y cuándo es estratégicamente correcto hacerlo.</p><a href="#" class="tutorial-link">Leer tutorial →</a></div></div>
+                <div class="tutorial-card"><div class="tutorial-number">04</div><div class="tutorial-content"><h3 class="tutorial-title">Finales de rey y peón: la oposición explicada</h3><p class="tutorial-text">La oposición es el concepto más importante en los finales de peones. Aprende cómo usarla para promocionar tu peón o defender una posición inferior.</p><a href="#" class="tutorial-link">Leer tutorial →</a></div></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== APERTURAS ===== -->
+    <section id="aperturas" class="py-20 bg-chess-dark">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-14">
+                <span class="text-chess-sky font-semibold text-sm uppercase tracking-widest">Repertorio de aperturas</span>
+                <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl font-bold mt-3 mb-4">Las aperturas más populares</h2>
+                <p class="text-white/60 max-w-2xl mx-auto">Explora las aperturas más jugadas y aprende sus planes estratégicos.</p>
+            </div>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="opening-card"><div class="opening-icon">♖</div><h3 class="opening-name">Apertura Española</h3><p class="opening-moves">1.e4 e5 2.Nf3 Nc6 3.Bb5</p><p class="opening-desc">La apertura clásica por excelencia. Posicional y rica en planes estratégicos.</p></div>
+                <div class="opening-card"><div class="opening-icon">♗</div><h3 class="opening-name">Defensa Siciliana</h3><p class="opening-moves">1.e4 c5</p><p class="opening-desc">La respuesta más agresiva contra 1.e4. Dinámica y llena de posibilidades tácticas.</p></div>
+                <div class="opening-card"><div class="opening-icon">♘</div><h3 class="opening-name">Gambito de Dama</h3><p class="opening-moves">1.d4 d5 2.c4</p><p class="opening-desc">Sacrificio posicional para ganar control del centro. Sólida y flexible.</p></div>
+                <div class="opening-card"><div class="opening-icon">♔</div><h3 class="opening-name">Defensa Francesa</h3><p class="opening-moves">1.e4 e6</p><p class="opening-desc">Estructura sólida con contraataque en el flanco de dama. Para jugadores pacientes.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CTA ===== -->
+    <section class="py-20 bg-gradient-to-r from-chess-royal via-chess-blue to-chess-navy relative overflow-hidden">
+        <div class="absolute inset-0 bg-pattern opacity-10"></div>
+        <div class="max-w-4xl mx-auto px-4 text-center relative z-10">
+            <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">¿Listo para hacer tu primer movimiento?</h2>
+            <p class="text-white/80 text-lg mb-8 max-w-2xl mx-auto">Únete a más de 10.000 jugadores que ya están mejorando su ajedrez con nuestros cursos y tutoriales. El primer paso es gratis.</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="#cursos" class="btn-gold text-base px-8 py-4">Crear cuenta gratis</a>
+                <a href="#" class="btn-outline text-base px-8 py-4">Ver plan premium</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer id="contacto" class="bg-chess-dark border-t border-white/10 pt-16 pb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+                <div>
+                    <a href="#" class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-chess-royal to-chess-navy rounded-xl flex items-center justify-center"><span class="text-chess-gold text-xl">♞</span></div>
+                        <span class="font-display text-lg font-bold">Ajedrez<span class="text-chess-sky">Integral</span></span>
+                    </a>
+                    <p class="text-white/50 text-sm leading-relaxed mb-6">Tu portal de ajedrez en español. Aprende, practica y mejora tu juego con cursos, tutoriales y una comunidad activa.</p>
+                    <div class="flex gap-4">
+                        <a href="#" class="social-icon" aria-label="Twitter"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+                        <a href="#" class="social-icon" aria-label="YouTube"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+                        <a href="#" class="social-icon" aria-label="Instagram"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.645-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg></a>
+                        <a href="#" class="social-icon" aria-label="Discord"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg></a>
+                    </div>
+                </div>
+                <div><h4 class="footer-title">Aprende</h4><ul class="space-y-3"><li><a href="#cursos" class="footer-link">Cursos</a></li><li><a href="#tutoriales" class="footer-link">Tutoriales</a></li><li><a href="#articulos" class="footer-link">Artículos</a></li><li><a href="#aperturas" class="footer-link">Aperturas</a></li><li><a href="#" class="footer-link">Ejercicios</a></li></ul></div>
+                <div><h4 class="footer-title">Comunidad</h4><ul class="space-y-3"><li><a href="#" class="footer-link">Foro</a></li><li><a href="#" class="footer-link">Torneos online</a></li><li><a href="#" class="footer-link">Jugar online</a></li><li><a href="#" class="footer-link">Clubes afiliados</a></li><li><a href="#" class="footer-link">Ranking</a></li></ul></div>
+                <div><h4 class="footer-title">Newsletter</h4><p class="text-white/50 text-sm mb-4">Recibe nuevos artículos y cursos cada semana en tu correo.</p><form class="space-y-3"><input type="email" placeholder="tu@email.com" class="footer-input"><button type="submit" class="btn-primary w-full text-center">Suscribirme</button></form></div>
+            </div>
+            <div class="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-white/40 text-sm">© 2026 AjedrezIntegral. Todos los derechos reservados.</p>
+                <ul class="flex gap-6 text-sm"><li><a href="#" class="footer-link">Privacidad</a></li><li><a href="#" class="footer-link">Términos</a></li><li><a href="#" class="footer-link">Cookies</a></li></ul>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const toggle = document.getElementById('mobile-toggle');
+        const menu = document.getElementById('mobile-menu');
+        const bars = document.querySelectorAll('.bar');
+        toggle.addEventListener('click', () => {
+            menu.classList.toggle('hidden');
+            bars[0].classList.toggle('rotate-45');
+            bars[0].classList.toggle('translate-y-2');
+            bars[1].classList.toggle('opacity-0');
+            bars[2].classList.toggle('-rotate-45');
+            bars[2].classList.toggle('-translate-y-2');
+        });
+        document.querySelectorAll('.mobile-link').forEach(link => {
+            link.addEventListener('click', () => {
+                menu.classList.add('hidden');
+                bars[0].classList.remove('rotate-45', 'translate-y-2');
+                bars[1].classList.remove('opacity-0');
+                bars[2].classList.remove('-rotate-45', '-translate-y-2');
+            });
+        });
+        const header = document.getElementById('header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) { header.classList.add('header-scrolled'); }
+            else { header.classList.remove('header-scrolled'); }
+        });
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+            });
+        });
+    </script>
+</body>
+</html>
