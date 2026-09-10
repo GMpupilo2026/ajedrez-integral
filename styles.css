@@ -34,6 +34,16 @@ body { overflow-x: hidden; }
 .chess-square.light { background: linear-gradient(135deg, #e0ecf8, #c3d9f0); }
 .chess-square.dark { background: linear-gradient(135deg, #2563eb, #1e4d8b); }
 
+/* ===== TABLERO EN VIVO (página Clases) ===== */
+.board-lite-grid { display: grid; grid-template-columns: repeat(8, 1fr); width: 100%; max-width: 560px; margin: 0 auto; border: 4px solid #1e4d8b; border-radius: 0.5rem; overflow: hidden; box-shadow: 0 25px 60px rgba(37, 99, 235, 0.35); }
+.board-lite-square { display: flex; align-items: center; justify-content: center; font-size: clamp(1.4rem, 4.5vw, 2.4rem); line-height: 1; user-select: none; position: relative; color: #0a1628; }
+.board-lite-square.dark { color: #e0ecf8; }
+.board-lite-square.legal-move::after { content: ''; position: absolute; width: 28%; height: 28%; border-radius: 999px; background: rgba(244, 196, 48, 0.55); pointer-events: none; }
+.board-lite-square.legal-capture { box-shadow: inset 0 0 0 4px rgba(244, 196, 48, 0.75); }
+.board-lite-square.selected { box-shadow: inset 0 0 0 4px #f4c430; }
+.board-lite-grid[data-interactive="true"] .board-lite-square { cursor: pointer; }
+.board-lite-grid[data-interactive="false"] .board-lite-square { cursor: default; }
+
 @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
 @keyframes float-delay { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
 .animate-float { animation: float 3s ease-in-out infinite; }

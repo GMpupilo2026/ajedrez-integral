@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar sesión — AjedrezIntegral</title>
+    <meta name="description" content="Inicia sesión para acceder a las clases en vivo de AjedrezIntegral.">
+    <meta name="robots" content="noindex">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { 'sans': ['Inter', 'sans-serif'], 'display': ['Playfair Display', 'serif'] },
+                    colors: {
+                        'chess-dark': '#0a1628', 'chess-navy': '#102a4c', 'chess-blue': '#1e4d8b',
+                        'chess-royal': '#2563eb', 'chess-sky': '#3b82f6', 'chess-light': '#e0ecf8', 'chess-gold': '#f4c430',
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="js/supabase-client.js"></script>
+</head>
+<body class="font-sans bg-chess-dark text-white antialiased min-h-screen flex items-center justify-center px-4">
+
+    <div class="absolute inset-0 z-0 overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-chess-dark via-chess-navy to-chess-blue"></div>
+        <div class="absolute inset-0 bg-pattern opacity-20"></div>
+    </div>
+
+    <div class="relative z-10 w-full max-w-sm">
+        <a href="index.html" class="flex items-center justify-center gap-3 mb-8 group">
+            <div class="w-11 h-11 bg-gradient-to-br from-chess-royal to-chess-navy rounded-xl flex items-center justify-center shadow-lg shadow-chess-royal/30">
+                <svg class="w-6 h-6 text-chess-gold" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C10.8954 2 10 2.89543 10 4C10 4.74028 10.4022 5.38663 11 5.73242V8H7V11H8.6178L7.5 13.5L5.5 12L4 14L5.5 16L7.5 14.5L9 16.5L7 19L9 21L12 18L15 21L17 19L15 16.5L16.5 14.5L18.5 16L20 14L18.5 12L16.5 13.5L15.4 11H17V8H13V5.73242C13.5978 5.38663 14 4.74028 14 4C14 2.89543 13.1046 2 12 2Z"/>
+                </svg>
+            </div>
+            <span class="font-display text-xl font-bold tracking-tight">Ajedrez<span class="text-chess-sky">Integral</span></span>
+        </a>
+
+        <div class="feature-card !p-8">
+            <h1 class="font-display text-2xl font-bold mb-1 text-center">Acceso a Clases</h1>
+            <p class="text-white/55 text-sm text-center mb-6">Inicia sesión con la cuenta que te dio tu profesor.</p>
+
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label for="email" class="block text-sm font-medium text-white/70 mb-1">Correo electrónico</label>
+                    <input id="email" type="email" required autocomplete="username"
+                        class="footer-input" placeholder="tucorreo@ejemplo.com">
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-white/70 mb-1">Contraseña</label>
+                    <input id="password" type="password" required autocomplete="current-password"
+                        class="footer-input" placeholder="••••••••">
+                </div>
+
+                <p id="error-msg" class="text-sm text-red-400 hidden"></p>
+
+                <button type="submit" id="submit-btn" class="btn-primary w-full">Iniciar sesión</button>
+            </form>
+
+            <p class="text-xs text-white/40 text-center mt-6">
+                ¿No tienes cuenta? Pídesela a tu profesor — las cuentas de alumno se crean manualmente.
+            </p>
+        </div>
+
+        <p class="text-center mt-6">
+            <a href="index.html" class="text-sm text-white/50 hover:text-white transition">← Volver al inicio</a>
+        </p>
+    </div>
+
+    <script>
+        (async () => {
+            // Si ya hay sesión activa, ir directo a Clases.
+            const { data: { session } } = await sb.auth.getSession();
+            if (session) window.location.href = "clases.html";
+        })();
+
+        const form = document.getElementById("login-form");
+        const errorMsg = document.getElementById("error-msg");
+        const submitBtn = document.getElementById("submit-btn");
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            errorMsg.classList.add("hidden");
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Ingresando...";
+
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+
+            const { error } = await sb.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                errorMsg.textContent = "Correo o contraseña incorrectos.";
+                errorMsg.classList.remove("hidden");
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Iniciar sesión";
+                return;
+            }
+
+            window.location.href = "clases.html";
+        });
+    </script>
+</body>
+</html>
