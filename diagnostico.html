@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico de nivel — AjedrezIntegral</title>
+    <meta name="description" content="Responde 56 preguntas de reglas, táctica, aperturas, finales y más, y descubre tu nivel de ajedrez: principiante, básico, intermedio, avanzado o experto.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { 'sans': ['Inter', 'sans-serif'], 'display': ['Playfair Display', 'serif'] },
+                    colors: {
+                        'chess-dark': '#0a1628', 'chess-navy': '#102a4c', 'chess-blue': '#1e4d8b',
+                        'chess-royal': '#2563eb', 'chess-sky': '#3b82f6', 'chess-light': '#e0ecf8', 'chess-gold': '#f4c430',
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script src="js/diagnostico-items.js"></script>
+</head>
+<body class="font-sans bg-chess-dark text-white antialiased min-h-screen">
+
+    <!-- ===== BARRA SUPERIOR ===== -->
+    <header class="bg-chess-navy/90 backdrop-blur-md border-b border-white/10 sticky top-0 z-40">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+            <a href="index.html" class="flex items-center gap-2 shrink-0">
+                <div class="w-9 h-9 bg-gradient-to-br from-chess-royal to-chess-navy rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-chess-gold" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C10.8954 2 10 2.89543 10 4C10 4.74028 10.4022 5.38663 11 5.73242V8H7V11H8.6178L7.5 13.5L5.5 12L4 14L5.5 16L7.5 14.5L9 16.5L7 19L9 21L12 18L15 21L17 19L15 16.5L16.5 14.5L18.5 16L20 14L18.5 12L16.5 13.5L15.4 11H17V8H13V5.73242C13.5978 5.38663 14 4.74028 14 4C14 2.89543 13.1046 2 12 2Z"/>
+                    </svg>
+                </div>
+                <span class="font-display text-base font-bold hidden sm:inline">Ajedrez<span class="text-chess-sky">Integral</span></span>
+            </a>
+            <h1 class="font-display text-lg md:text-xl font-bold">Diagnóstico de nivel</h1>
+            <a href="index.html" class="text-sm text-white/60 hover:text-white transition shrink-0">← Inicio</a>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+        <!-- ===== INTRO ===== -->
+        <section id="intro-screen">
+            <div class="text-center mb-10">
+                <span class="text-chess-sky font-semibold text-sm uppercase tracking-widest">Test gratuito</span>
+                <h2 class="font-display text-3xl sm:text-4xl font-bold mt-3 mb-4">¿Cuál es tu nivel de ajedrez?</h2>
+                <p class="text-white/60 max-w-xl mx-auto">
+                    56 preguntas de opción múltiple sobre reglas, material, aperturas, táctica, mates,
+                    finales, estrategia y cálculo. Al terminar sabrás tu nivel — <strong class="text-white/80">principiante, básico,
+                    intermedio, avanzado o experto</strong> — y en qué áreas conviene enfocar tu estudio.
+                </p>
+            </div>
+            <div class="feature-card !p-8 text-center">
+                <span class="feature-icon">🧭</span>
+                <h3 class="feature-title">Antes de empezar</h3>
+                <p class="feature-text mb-6">
+                    Tómate tu tiempo con cada pregunta, no hay límite de tiempo. Algunas preguntas muestran
+                    un pequeño tablero: elige, entre las jugadas que se ofrecen, la que resuelve lo que pide
+                    el enunciado.
+                </p>
+                <button id="start-btn" class="btn-primary text-base px-8 py-4">Empezar el diagnóstico</button>
+            </div>
+        </section>
+
+        <!-- ===== QUIZ ===== -->
+        <section id="quiz-screen" class="hidden">
+            <div class="mb-6">
+                <div class="flex items-center justify-between text-sm text-white/50 mb-2">
+                    <span id="progress-label">Pregunta 1 de 56</span>
+                    <span id="area-label" class="uppercase tracking-wide text-xs font-semibold text-chess-sky"></span>
+                </div>
+                <div class="w-full h-2 rounded-full bg-white/10 overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-gradient-to-r from-chess-sky to-chess-royal transition-all duration-300" style="width:0%"></div>
+                </div>
+            </div>
+
+            <div class="feature-card !p-6 sm:!p-8">
+                <p id="question-text" class="text-lg font-semibold mb-6"></p>
+
+                <div id="board-wrap" class="hidden mb-6">
+                    <p id="board-turn" class="text-center text-white/50 text-sm mb-3"></p>
+                    <div id="board" class="board-lite-grid" data-interactive="false"></div>
+                </div>
+
+                <div id="options-wrap" class="space-y-3"></div>
+
+                <p id="feedback" class="hidden mt-5 text-sm rounded-xl px-4 py-3"></p>
+
+                <div class="flex justify-end mt-6">
+                    <button id="next-btn" class="btn-primary hidden">Siguiente →</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== RESULTADOS ===== -->
+        <section id="result-screen" class="hidden">
+            <div class="text-center mb-10">
+                <span class="text-chess-sky font-semibold text-sm uppercase tracking-widest">Resultado</span>
+                <h2 id="result-nivel" class="font-display text-3xl sm:text-4xl font-bold mt-3 mb-2"></h2>
+                <p id="result-rango" class="text-white/50 text-sm mb-4"></p>
+                <p id="result-desc" class="text-white/70 max-w-xl mx-auto"></p>
+            </div>
+
+            <div class="feature-card !p-6 sm:!p-8 mb-8">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="feature-title !mb-0">Puntaje global</h3>
+                    <span id="result-global-pct" class="font-display text-2xl font-bold text-chess-sky"></span>
+                </div>
+                <div class="w-full h-3 rounded-full bg-white/10 overflow-hidden mb-1">
+                    <div id="result-global-bar" class="h-full bg-gradient-to-r from-chess-sky to-chess-royal" style="width:0%"></div>
+                </div>
+                <p id="result-aciertos" class="text-xs text-white/40"></p>
+            </div>
+
+            <div class="feature-card !p-6 sm:!p-8">
+                <h3 class="feature-title mb-4">Resultado por área</h3>
+                <div id="areas-breakdown" class="space-y-4"></div>
+            </div>
+
+            <div class="text-center mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+                <button id="retry-btn" class="btn-secondary text-base px-8 py-4">Volver a intentar</button>
+                <a href="index.html#cursos" class="btn-gold text-base px-8 py-4">Ver cursos recomendados</a>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // ===== Áreas y niveles =====
+        const AREAS = {
+            reglas: { nombre: 'Reglas', emoji: '📜' },
+            material: { nombre: 'Material', emoji: '⚖️' },
+            apertura: { nombre: 'Aperturas', emoji: '🚪' },
+            tactica: { nombre: 'Táctica', emoji: '⚔️' },
+            mate: { nombre: 'Mates', emoji: '👑' },
+            finales: { nombre: 'Finales', emoji: '🏁' },
+            estrategia: { nombre: 'Estrategia', emoji: '🧠' },
+            calculo: { nombre: 'Cálculo', emoji: '🔢' },
+        };
+
+        // Umbrales ascendentes: principiante < básico < intermedio < avanzado < experto.
+        const NIVELES = [
+            { clave: 'principiante', desde: 0, etiqueta: 'Principiante', rango: 'menos de 800 aprox.',
+                descripcion: 'Estás aprendiendo las reglas y a no dejar piezas gratis. Toca afianzar el reglamento y contar bien el material antes de avanzar.' },
+            { clave: 'basico', desde: 30, etiqueta: 'Básico', rango: '800 a 1100 aprox.',
+                descripcion: 'Ya juegas partidas completas. Conviene reforzar la táctica elemental (horquillas, clavadas) y los mates más comunes.' },
+            { clave: 'intermedio', desde: 50, etiqueta: 'Intermedio', rango: '1100 a 1400 aprox.',
+                descripcion: 'Tienes buena base. Ahora conviene trabajar finales, planes estratégicos y un cálculo más ordenado.' },
+            { clave: 'avanzado', desde: 70, etiqueta: 'Avanzado', rango: '1400 a 1700 aprox.',
+                descripcion: 'Juegas bien en general. Te conviene estudiar por debilidades concretas y profundizar en aperturas propias.' },
+            { clave: 'experto', desde: 87, etiqueta: 'Experto', rango: '1700 o más aprox.',
+                descripcion: 'Nivel de competencia sólido. El siguiente paso es un repertorio propio, finales técnicos y análisis sistemático de tus partidas.' },
+        ];
+
+        function nivelDe(pct) {
+            let nivel = NIVELES[0];
+            NIVELES.forEach((n) => { if (pct >= n.desde) nivel = n; });
+            return nivel;
+        }
+
+        // ===== Preparar preguntas: baraja las opciones de cada ítem (no el orden de las preguntas) =====
+        function barajar(arr) {
+            const copia = arr.slice();
+            for (let i = copia.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copia[i], copia[j]] = [copia[j], copia[i]];
+            }
+            return copia;
+        }
+
+        function prepararPreguntas() {
+            return window.DIAGNOSTICO_ITEMS.map((item) => {
+                if (item.tipo === 'opcion') {
+                    const indices = barajar(item.opciones.map((_, i) => i));
+                    return {
+                        item,
+                        etiquetas: indices.map((i) => item.opciones[i]),
+                        correctaShuffled: indices.indexOf(item.correcta),
+                    };
+                }
+                // opcion_tablero: generamos la etiqueta de cada jugada (SAN) con chess.js,
+                // a partir de la MISMA fen del ítem, para que el texto del botón siempre
+                // coincida exactamente con lo que hace esa jugada en esa posición.
+                const etiquetasCompletas = item.tablero.opciones.map((mv) => {
+                    const c = new Chess(item.fen);
+                    const r = c.move({ from: mv.from, to: mv.to, promotion: mv.promotion });
+                    return r ? r.san : `${mv.from}-${mv.to}`;
+                });
+                const indices = barajar(etiquetasCompletas.map((_, i) => i));
+                return {
+                    item,
+                    etiquetas: indices.map((i) => etiquetasCompletas[i]),
+                    correctaShuffled: indices.indexOf(item.correcta),
+                };
+            });
+        }
+
+        // ===== Render de tablero de solo lectura a partir de un FEN =====
+        const PIECE_GLYPHS = { K: '♔', Q: '♕', R: '♖', B: '♗', N: '♘', P: '♙', k: '♚', q: '♛', r: '♜', b: '♝', n: '♞', p: '♟' };
+
+        function renderBoard(container, fen) {
+            container.innerHTML = '';
+            const game = new Chess(fen);
+            const board = game.board(); // board[0] = fila 8 ... board[7] = fila 1
+            const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+            for (let r = 0; r < 8; r++) {
+                const rank = 8 - r;
+                for (let f = 0; f < 8; f++) {
+                    const square = `${files[f]}${rank}`;
+                    const piece = board[r][f];
+                    const isLight = (f + rank) % 2 === 1;
+                    const el = document.createElement('div');
+                    el.className = `chess-square ${isLight ? 'light' : 'dark'} board-lite-square`;
+                    el.dataset.square = square;
+                    el.textContent = piece ? PIECE_GLYPHS[piece.color === 'w' ? piece.type.toUpperCase() : piece.type] : '';
+                    container.appendChild(el);
+                }
+            }
+            return game;
+        }
+
+        // ===== Estado del quiz =====
+        let preguntas = [];
+        let idx = 0;
+        let respuestas = []; // { item, correcta: bool }
+
+        const introScreen = document.getElementById('intro-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+
+        function iniciar() {
+            preguntas = prepararPreguntas();
+            idx = 0;
+            respuestas = [];
+            introScreen.classList.add('hidden');
+            resultScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            mostrarPregunta();
+        }
+
+        function mostrarPregunta() {
+            const total = preguntas.length;
+            const actual = preguntas[idx];
+            const item = actual.item;
+
+            document.getElementById('progress-label').textContent = `Pregunta ${idx + 1} de ${total}`;
+            document.getElementById('area-label').textContent = `${AREAS[item.area].emoji} ${AREAS[item.area].nombre}`;
+            document.getElementById('progress-bar').style.width = `${(idx / total) * 100}%`;
+            document.getElementById('question-text').textContent = item.enunciado;
+
+            const boardWrap = document.getElementById('board-wrap');
+            if (item.fen) {
+                boardWrap.classList.remove('hidden');
+                const game = renderBoard(document.getElementById('board'), item.fen);
+                document.getElementById('board-turn').textContent = `Juegan ${game.turn() === 'w' ? 'blancas' : 'negras'}`;
+            } else {
+                boardWrap.classList.add('hidden');
+            }
+
+            const optionsWrap = document.getElementById('options-wrap');
+            optionsWrap.innerHTML = '';
+            actual.etiquetas.forEach((texto, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full text-left px-5 py-3 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 hover:border-chess-sky/50 transition font-medium';
+                btn.textContent = texto;
+                btn.addEventListener('click', () => responder(i, btn));
+                optionsWrap.appendChild(btn);
+            });
+
+            document.getElementById('feedback').classList.add('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+        }
+
+        function responder(iElegida, btnElegido) {
+            const actual = preguntas[idx];
+            const correcta = iElegida === actual.correctaShuffled;
+
+            // Deshabilitar todas las opciones y marcar visualmente correcta/incorrecta.
+            const botones = Array.from(document.getElementById('options-wrap').children);
+            botones.forEach((btn, i) => {
+                btn.disabled = true;
+                btn.classList.remove('hover:bg-white/10', 'hover:border-chess-sky/50');
+                if (i === actual.correctaShuffled) {
+                    btn.classList.add('!bg-green-500/20', '!border-green-400');
+                } else if (i === iElegida) {
+                    btn.classList.add('!bg-red-500/20', '!border-red-400');
+                }
+            });
+
+            const feedback = document.getElementById('feedback');
+            feedback.classList.remove('hidden');
+            if (correcta) {
+                feedback.className = 'mt-5 text-sm rounded-xl px-4 py-3 bg-green-500/10 border border-green-500/30 text-green-300';
+                feedback.textContent = `✔ ¡Correcto! ${actual.item.explica}`;
+            } else {
+                feedback.className = 'mt-5 text-sm rounded-xl px-4 py-3 bg-red-500/10 border border-red-500/30 text-red-300';
+                feedback.textContent = `✘ No era esa. ${actual.item.explica}`;
+            }
+
+            respuestas.push({ item: actual.item, correcta });
+            document.getElementById('next-btn').classList.remove('hidden');
+        }
+
+        document.getElementById('next-btn').addEventListener('click', () => {
+            idx++;
+            if (idx < preguntas.length) {
+                mostrarPregunta();
+            } else {
+                mostrarResultado();
+            }
+        });
+
+        function mostrarResultado() {
+            quizScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            document.getElementById('progress-bar').style.width = '100%';
+
+            // Acumular peso logrado y peso total, global y por área.
+            const porArea = {};
+            Object.keys(AREAS).forEach((a) => { porArea[a] = { peso: 0, logrado: 0, aciertos: 0, total: 0 }; });
+
+            respuestas.forEach(({ item, correcta }) => {
+                const a = porArea[item.area];
+                a.peso += item.peso;
+                a.total += 1;
+                if (correcta) { a.logrado += item.peso; a.aciertos += 1; }
+            });
+
+            let pesoTotalGlobal = 0;
+            let logradoGlobal = 0;
+            let aciertosGlobal = 0;
+            Object.values(porArea).forEach((a) => { pesoTotalGlobal += a.peso; logradoGlobal += a.logrado; aciertosGlobal += a.aciertos; });
+
+            const pctGlobal = pesoTotalGlobal ? Math.round((logradoGlobal / pesoTotalGlobal) * 100) : 0;
+            const nivel = nivelDe(pctGlobal);
+
+            document.getElementById('result-nivel').textContent = `Nivel: ${nivel.etiqueta}`;
+            document.getElementById('result-rango').textContent = `Elo aproximado: ${nivel.rango}`;
+            document.getElementById('result-desc').textContent = nivel.descripcion;
+            document.getElementById('result-global-pct').textContent = `${pctGlobal}%`;
+            document.getElementById('result-global-bar').style.width = `${pctGlobal}%`;
+            document.getElementById('result-aciertos').textContent = `${aciertosGlobal} de ${respuestas.length} preguntas correctas`;
+
+            const breakdown = document.getElementById('areas-breakdown');
+            breakdown.innerHTML = '';
+            Object.entries(porArea)
+                .sort((a, b) => (a[1].peso ? a[1].logrado / a[1].peso : 0) - (b[1].peso ? b[1].logrado / b[1].peso : 0))
+                .forEach(([clave, datos]) => {
+                    const pct = datos.peso ? Math.round((datos.logrado / datos.peso) * 100) : 0;
+                    const color = pct >= 80 ? 'from-green-500 to-green-400' : pct >= 60 ? 'from-yellow-500 to-amber-400' : 'from-red-500 to-red-400';
+                    const row = document.createElement('div');
+                    row.innerHTML = `
+                        <div class="flex items-center justify-between text-sm mb-1">
+                            <span class="font-medium">${AREAS[clave].emoji} ${AREAS[clave].nombre}</span>
+                            <span class="text-white/50">${datos.aciertos}/${datos.total} · ${pct}%</span>
+                        </div>
+                        <div class="w-full h-2 rounded-full bg-white/10 overflow-hidden">
+                            <div class="h-full bg-gradient-to-r ${color}" style="width:${pct}%"></div>
+                        </div>`;
+                    breakdown.appendChild(row);
+                });
+        }
+
+        document.getElementById('start-btn').addEventListener('click', iniciar);
+        document.getElementById('retry-btn').addEventListener('click', iniciar);
+    </script>
+</body>
+</html>
