@@ -79,6 +79,7 @@
                             <button type="submit" id="create-student-btn" class="btn-primary w-full !text-sm">Crear alumno</button>
                             <p id="create-student-msg" class="text-xs"></p>
                         </form>
+
                     </div>
 
                     <!-- Panel del alumno -->
@@ -86,6 +87,12 @@
                         <span class="feature-icon">👀</span>
                         <h2 class="feature-title">Estás viendo en vivo</h2>
                         <p class="feature-text">El profesor está moviendo las piezas. El tablero se actualiza automáticamente con cada jugada.</p>
+                    </div>
+
+                    <!-- Panel de administración: independiente de profesor/alumno -->
+                    <div id="admin-panel" class="feature-card hidden">
+                        <h2 class="feature-title">Panel de administración</h2>
+                        <a href="admin-jugador.html" class="btn-outline w-full !text-sm block text-center">🔎 Base de datos de jugadores (chess-results.com)</a>
                     </div>
                 </aside>
             </div>
@@ -176,6 +183,7 @@
             badge.classList.add(isTeacher ? "bg-chess-gold" : "bg-chess-royal", isTeacher ? "text-chess-dark" : "text-white");
 
             document.getElementById(isTeacher ? "teacher-panel" : "student-panel").classList.remove("hidden");
+            if (profile.is_admin) document.getElementById("admin-panel").classList.remove("hidden");
             setStatus(isTeacher
                 ? "Mueve el tablero: cada jugada se transmite en vivo a todos los alumnos conectados."
                 : "Bienvenido a la clase. Verás el tablero moverse en vivo mientras el profesor juega.");

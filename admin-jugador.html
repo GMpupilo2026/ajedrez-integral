@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base de datos de jugadores — AjedrezIntegral</title>
+    <meta name="description" content="Panel de administración: busca el historial completo de un jugador en chess-results.com.">
+    <meta name="robots" content="noindex">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { 'sans': ['Inter', 'sans-serif'], 'display': ['Playfair Display', 'serif'] },
+                    colors: {
+                        'chess-dark': '#0a1628', 'chess-navy': '#102a4c', 'chess-blue': '#1e4d8b',
+                        'chess-royal': '#2563eb', 'chess-sky': '#3b82f6', 'chess-light': '#e0ecf8', 'chess-gold': '#f4c430',
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="js/supabase-client.js"></script>
+</head>
+<body class="font-sans bg-chess-dark text-white antialiased min-h-screen">
+
+    <div id="app" class="hidden">
+        <header class="bg-chess-navy/90 backdrop-blur-md border-b border-white/10 sticky top-0 z-40">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+                <a href="index.html" class="flex items-center gap-2 shrink-0">
+                    <div class="w-9 h-9 bg-gradient-to-br from-chess-royal to-chess-navy rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-chess-gold" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C10.8954 2 10 2.89543 10 4C10 4.74028 10.4022 5.38663 11 5.73242V8H7V11H8.6178L7.5 13.5L5.5 12L4 14L5.5 16L7.5 14.5L9 16.5L7 19L9 21L12 18L15 21L17 19L15 16.5L16.5 14.5L18.5 16L20 14L18.5 12L16.5 13.5L15.4 11H17V8H13V5.73242C13.5978 5.38663 14 4.74028 14 4C14 2.89543 13.1046 2 12 2Z"/>
+                        </svg>
+                    </div>
+                    <span class="font-display text-base font-bold hidden sm:inline">Ajedrez<span class="text-chess-sky">Integral</span></span>
+                </a>
+                <h1 class="font-display text-base md:text-xl font-bold">🔎 Base de datos de jugadores</h1>
+                <a href="clases.html" class="btn-secondary !py-2 !px-4 !text-xs">← Academia</a>
+            </div>
+        </header>
+
+        <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
+            <div class="feature-card">
+                <h2 class="feature-title">Buscar jugador en chess-results.com</h2>
+                <p class="feature-text mb-4">
+                    Trae el historial de torneos de una persona directamente desde la base de datos pública de
+                    <a href="https://s3.chess-results.com/SpielerSuche.aspx?lan=2&amp;SNode=S0" target="_blank" rel="noopener" class="text-chess-sky hover:underline">chess-results.com</a>.
+                    La búsqueda es por nombre, así que si el jugador tiene homónimos revisa el Código FIDE de cada resultado antes de darlo por bueno.
+                </p>
+                <form id="search-form" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="sm:col-span-1">
+                        <label class="text-xs text-white/60 block mb-1">Apellido *</label>
+                        <input id="f-apellido" type="text" required placeholder="ej. Angulo Cubero" class="footer-input !text-sm w-full">
+                    </div>
+                    <div class="sm:col-span-1">
+                        <label class="text-xs text-white/60 block mb-1">Nombre</label>
+                        <input id="f-nombre" type="text" placeholder="ej. Oscar" class="footer-input !text-sm w-full">
+                    </div>
+                    <div class="sm:col-span-1">
+                        <label class="text-xs text-white/60 block mb-1">Código FIDE (si ya lo sabes)</label>
+                        <input id="f-fideid" type="text" placeholder="ej. 6501435" class="footer-input !text-sm w-full">
+                    </div>
+                    <div class="sm:col-span-3">
+                        <button type="submit" id="search-btn" class="btn-primary w-full !text-sm">Buscar</button>
+                        <p id="search-msg" class="text-xs mt-2"></p>
+                    </div>
+                </form>
+            </div>
+
+            <div id="results" class="hidden space-y-6">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                    <p id="results-summary" class="text-sm text-white/60"></p>
+                    <button id="download-btn" class="btn-outline !text-xs !py-1.5 !px-3">⬇️ Descargar CSV</button>
+                </div>
+                <div id="grupos-container" class="space-y-6"></div>
+                <div id="sinfide-container" class="hidden"></div>
+            </div>
+
+            <p id="empty-msg" class="hidden text-sm text-white/50 text-center py-6">No se encontraron torneos con ese nombre en chess-results.com.</p>
+        </main>
+    </div>
+
+    <div id="loading" class="min-h-screen flex items-center justify-center text-white/50">Cargando…</div>
+
+    <div id="error-state" class="hidden min-h-screen flex flex-col items-center justify-center text-center px-4 gap-3">
+        <p class="text-4xl">🚫</p>
+        <p id="error-text" class="text-white/60"></p>
+        <a href="clases.html" class="btn-secondary !text-sm">← Volver a Clases</a>
+    </div>
+
+    <script>
+        let session = null, profile = null;
+        // fideId -> ficha ya cargada de un torneo puntual (resumen + rondas),
+        // para no repetir llamadas y para poder incluirla en el CSV.
+        const fichasCache = {};
+        let ultimaBusqueda = { grupos: [], sinFide: [], apellido: "", nombre: "" };
+
+        function showError(text) {
+            document.getElementById("loading").classList.add("hidden");
+            document.getElementById("error-text").textContent = text;
+            document.getElementById("error-state").classList.remove("hidden");
+        }
+
+        function claveTorneo(tnr, snr) { return tnr + "-" + snr; }
+
+        // ---------------------------------------------------------------
+        // Agrupar los resultados: por Código FIDE (que es lo único estable
+        // entre torneos) — las filas con FIDE-ID "0" (no registrado en esa
+        // carga en particular) se listan aparte, SIN mezclarlas con ningún
+        // grupo, porque un nombre igual no siempre es la misma persona
+        // (ej. un jugador de otro país con el mismo nombre y apellido).
+        // ---------------------------------------------------------------
+        function agruparPorJugador(filas) {
+            const porFide = new Map();
+            const sinFide = [];
+            filas.forEach((f) => {
+                if (f.fideId && f.fideId !== "0") {
+                    if (!porFide.has(f.fideId)) {
+                        porFide.set(f.fideId, { fideId: f.fideId, nombre: f.nombreMostrado, club: f.club, fed: f.fed, filas: [] });
+                    }
+                    porFide.get(f.fideId).filas.push(f);
+                } else {
+                    sinFide.push(f);
+                }
+            });
+            const grupos = [...porFide.values()];
+            grupos.forEach((g) => g.filas.sort((a, b) => (b.fechaFinal || "").localeCompare(a.fechaFinal || "")));
+            grupos.sort((a, b) => b.filas.length - a.filas.length);
+            sinFide.sort((a, b) => (b.fechaFinal || "").localeCompare(a.fechaFinal || ""));
+            return { grupos, sinFide };
+        }
+
+        function filaTorneoHtml(fila) {
+            const wrap = document.createElement("div");
+            wrap.className = "feature-card !p-4";
+            wrap.innerHTML = `
+                <div class="flex justify-between items-start gap-3 flex-wrap">
+                    <div class="min-w-0">
+                        <p class="font-semibold text-white text-sm truncate">
+                            <a href="${fila.torneoUrl}" target="_blank" rel="noopener" class="hover:underline">${fila.torneoNombre || "(sin nombre)"}</a>
+                        </p>
+                        <p class="text-xs text-white/50 mt-0.5">${fila.fechaFinal || "?"} · ${fila.club || "sin club"} · ${fila.fed || "?"}</p>
+                        <p class="text-xs text-white/50">Puesto ${fila.puesto || "?"} de ${fila.participantes || "?"} · ${fila.rondas || "?"} rondas</p>
+                    </div>
+                    <button type="button" class="btn-outline !text-xs !py-1.5 !px-3 ver-rondas-btn shrink-0">Ver rondas</button>
+                </div>
+                <div class="rondas-detalle hidden mt-3 border-t border-white/10 pt-3 text-xs"></div>
+            `;
+            const btn = wrap.querySelector(".ver-rondas-btn");
+            const detalle = wrap.querySelector(".rondas-detalle");
+            btn.addEventListener("click", async () => {
+                if (!detalle.classList.contains("hidden")) { detalle.classList.add("hidden"); return; }
+                if (!fila.tnr || !fila.snr) { detalle.innerHTML = "<p class='text-red-400'>Esta fila no trae enlace directo al torneo.</p>"; detalle.classList.remove("hidden"); return; }
+                detalle.innerHTML = "<p class='text-white/40'>Cargando…</p>";
+                detalle.classList.remove("hidden");
+                try {
+                    const clave = claveTorneo(fila.tnr, fila.snr);
+                    let ficha = fichasCache[clave];
+                    if (!ficha) {
+                        const { data, error } = await sb.functions.invoke("chess-results-proxy", { body: { action: "torneo-jugador", tnr: fila.tnr, snr: fila.snr } });
+                        if (error) throw error;
+                        if (!data || data.error) throw new Error((data && data.error) || "Error desconocido");
+                        ficha = data;
+                        fichasCache[clave] = ficha;
+                    }
+                    detalle.innerHTML = renderFichaTorneo(ficha);
+                } catch (err) {
+                    detalle.innerHTML = "<p class='text-red-400'>No se pudo cargar: " + (err.message || err) + "</p>";
+                }
+            });
+            return wrap;
+        }
+
+        function renderFichaTorneo(ficha) {
+            const r = ficha.resumen || {};
+            const resumenHtml = `
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+                    <div><p class="text-white/40">Elo</p><p class="font-semibold">${r["Elo"] || "-"}</p></div>
+                    <div><p class="text-white/40">Performance</p><p class="font-semibold">${r["Performance"] || "-"}</p></div>
+                    <div><p class="text-white/40">Puntos</p><p class="font-semibold">${r["Puntos"] || "-"}</p></div>
+                    <div><p class="text-white/40">Puesto</p><p class="font-semibold">${r["Puesto"] || "-"}</p></div>
+                </div>`;
+            if (!ficha.rondas || !ficha.rondas.length) {
+                return resumenHtml + "<p class='text-white/40'>chess-results.com no mostró el detalle ronda a ronda para este torneo.</p>";
+            }
+            const filas = ficha.rondas.map((rd) => `
+                <tr class="border-b border-white/5">
+                    <td class="py-1 pr-2">${rd.ronda}</td>
+                    <td class="py-1 pr-2">${rd.color === "blancas" ? "⚪" : rd.color === "negras" ? "⚫" : "?"}</td>
+                    <td class="py-1 pr-2">${rd.tituloRival ? rd.tituloRival + " " : ""}${rd.nombreRival}</td>
+                    <td class="py-1 pr-2">${rd.eloRival}</td>
+                    <td class="py-1 pr-2">${rd.fedRival}</td>
+                    <td class="py-1 font-semibold">${rd.resultado}</td>
+                </tr>`).join("");
+            return resumenHtml + `
+                <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="text-white/40"><tr><th class="pb-1 pr-2">Rd</th><th class="pb-1 pr-2">Color</th><th class="pb-1 pr-2">Rival</th><th class="pb-1 pr-2">Elo</th><th class="pb-1 pr-2">Fed</th><th class="pb-1">Res.</th></tr></thead>
+                    <tbody>${filas}</tbody>
+                </table>
+                </div>`;
+        }
+
+        function renderGrupo(grupo) {
+            const card = document.createElement("div");
+            const primerNombre = grupo.filas[0].nombreMostrado;
+            card.innerHTML = `
+                <h3 class="font-display text-lg font-bold mb-1">${primerNombre}</h3>
+                <p class="text-xs text-white/50 mb-3">Código FIDE ${grupo.fideId} · ${grupo.club || "sin club registrado"} · ${grupo.fed} · ${grupo.filas.length} torneo(s) encontrado(s)</p>
+                <div class="space-y-2 torneos-list"></div>
+            `;
+            const list = card.querySelector(".torneos-list");
+            grupo.filas.forEach((fila) => list.appendChild(filaTorneoHtml(fila)));
+            return card;
+        }
+
+        function renderResultados(grupos, sinFide) {
+            const gruposEl = document.getElementById("grupos-container");
+            const sinFideEl = document.getElementById("sinfide-container");
+            gruposEl.innerHTML = "";
+            sinFideEl.innerHTML = "";
+
+            grupos.forEach((g) => gruposEl.appendChild(renderGrupo(g)));
+
+            if (sinFide.length) {
+                const wrap = document.createElement("div");
+                wrap.innerHTML = `
+                    <h3 class="font-display text-base font-bold mb-1 text-amber-400">⚠️ Coincidencias sin Código FIDE confirmado</h3>
+                    <p class="text-xs text-white/50 mb-3">
+                        Estas filas comparten el nombre buscado, pero chess-results.com no tiene su Código FIDE registrado en ese torneo —
+                        no se puede saber sin revisarlas a mano si son la misma persona u otra con el mismo nombre.
+                    </p>
+                    <div class="space-y-2 torneos-list"></div>`;
+                const list = wrap.querySelector(".torneos-list");
+                sinFide.forEach((fila) => list.appendChild(filaTorneoHtml(fila)));
+                sinFideEl.appendChild(wrap);
+                sinFideEl.classList.remove("hidden");
+            }
+        }
+
+        // ---------------------------------------------------------------
+        // Descarga en CSV: el resumen de torneos de cada grupo (siempre
+        // disponible tras la búsqueda) + el detalle ronda a ronda de
+        // cualquier torneo que ya se haya expandido en pantalla.
+        // ---------------------------------------------------------------
+        function csvEscape(v) {
+            const s = String(v == null ? "" : v);
+            return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+        }
+
+        function construirCsv() {
+            const lineas = [];
+            const agregarTabla = (encabezados, filas) => {
+                lineas.push(encabezados.map(csvEscape).join(","));
+                filas.forEach((f) => lineas.push(f.map(csvEscape).join(",")));
+                lineas.push("");
+            };
+
+            [...ultimaBusqueda.grupos, { fideId: "(sin confirmar)", nombre: "", filas: ultimaBusqueda.sinFide }]
+                .filter((g) => g.filas.length)
+                .forEach((g) => {
+                    lineas.push("Jugador: " + (g.filas[0].nombreMostrado || "") + " — Código FIDE " + g.fideId);
+                    agregarTabla(
+                        ["Fecha final", "Torneo", "Club", "Federación", "Puesto", "Rondas", "Participantes", "URL torneo"],
+                        g.filas.map((f) => [f.fechaFinal, f.torneoNombre, f.club, f.fed, f.puesto, f.rondas, f.participantes, f.torneoUrl])
+                    );
+                    g.filas.forEach((f) => {
+                        const ficha = fichasCache[claveTorneo(f.tnr, f.snr)];
+                        if (ficha && ficha.rondas && ficha.rondas.length) {
+                            lineas.push("  Ronda a ronda — " + f.torneoNombre);
+                            agregarTabla(
+                                ["Ronda", "Color", "Rival", "Elo rival", "Fed rival", "Resultado"],
+                                ficha.rondas.map((r) => [r.ronda, r.color, (r.tituloRival ? r.tituloRival + " " : "") + r.nombreRival, r.eloRival, r.fedRival, r.resultado])
+                            );
+                        }
+                    });
+                });
+            return lineas.join("\n");
+        }
+
+        document.getElementById("download-btn").addEventListener("click", () => {
+            const csv = "﻿" + construirCsv(); // BOM para que Excel detecte UTF-8
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            const nombreArchivo = (ultimaBusqueda.apellido || "jugador").replace(/[^a-z0-9]+/gi, "_");
+            a.href = url;
+            a.download = "chess-results_" + nombreArchivo + ".csv";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        });
+
+        document.getElementById("search-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const apellido = document.getElementById("f-apellido").value.trim();
+            const nombre = document.getElementById("f-nombre").value.trim();
+            const fideId = document.getElementById("f-fideid").value.trim();
+            const msg = document.getElementById("search-msg");
+            const btn = document.getElementById("search-btn");
+            if (!apellido) { msg.textContent = "El apellido es requerido."; msg.className = "text-xs mt-2 text-red-400"; return; }
+
+            msg.textContent = "";
+            btn.disabled = true;
+            btn.textContent = "Buscando en chess-results.com…";
+            document.getElementById("results").classList.add("hidden");
+            document.getElementById("empty-msg").classList.add("hidden");
+
+            try {
+                const { data, error } = await sb.functions.invoke("chess-results-proxy", { body: { action: "search", apellido, nombre, fideId } });
+                if (error) throw error;
+                if (!data || data.error) throw new Error((data && data.error) || "Error desconocido");
+
+                const { grupos, sinFide } = agruparPorJugador(data.filas || []);
+                ultimaBusqueda = { grupos, sinFide, apellido, nombre };
+
+                if (!grupos.length && !sinFide.length) {
+                    document.getElementById("empty-msg").classList.remove("hidden");
+                } else {
+                    document.getElementById("results-summary").textContent =
+                        grupos.length + " jugador(es) identificado(s) por Código FIDE" + (sinFide.length ? ", " + sinFide.length + " torneo(s) sin FIDE-ID confirmado" : "") + ".";
+                    renderResultados(grupos, sinFide);
+                    document.getElementById("results").classList.remove("hidden");
+                }
+            } catch (err) {
+                msg.textContent = err.message || "No se pudo consultar chess-results.com.";
+                msg.className = "text-xs mt-2 text-red-400";
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Buscar";
+            }
+        });
+
+        async function init() {
+            const { data } = await sb.auth.getSession();
+            session = data.session;
+            if (!session) { window.location.href = "login.html?next=admin-jugador.html"; return; }
+
+            const { data: profileData, error: profileError } = await sb.from("profiles").select("*").eq("id", session.user.id).single();
+            if (profileError || !profileData) { showError("No se pudo cargar tu perfil. Cierra sesión y vuelve a entrar."); return; }
+            profile = profileData;
+
+            if (!profile.is_admin) {
+                showError("Esta página es solo para la persona administradora.");
+                return;
+            }
+
+            document.getElementById("loading").classList.add("hidden");
+            document.getElementById("app").classList.remove("hidden");
+        }
+        init();
+    </script>
+</body>
+</html>
