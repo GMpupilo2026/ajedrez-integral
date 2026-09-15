@@ -106,7 +106,10 @@
             <section id="play-view" class="hidden">
                 <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
                     <a href="cuatro-jugadores.html" class="text-sm text-white/60 hover:text-white transition">← Volver a tus partidas</a>
-                    <button id="resign-btn" class="hidden text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-300 transition-colors">🏳️ Rendirse</button>
+                    <div class="flex items-center gap-2">
+                        <button id="teacher-end-btn" class="hidden text-xs font-semibold px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white/70 transition-colors">🛑 Terminar partida</button>
+                        <button id="resign-btn" class="hidden text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-300 transition-colors">🏳️ Rendirse</button>
+                    </div>
                 </div>
 
                 <button id="ready-btn" class="hidden w-full mb-4 btn-gold !text-sm">✅ Estoy listo para jugar</button>
@@ -277,6 +280,7 @@
 
         function updateStatusText() {
             document.getElementById("resign-btn").classList.toggle("hidden", !mySeat || room.status !== "playing" || game.status[mySeat] !== "active");
+            document.getElementById("teacher-end-btn").classList.toggle("hidden", !isTeacher || room.status !== "playing");
             const readyBtn = document.getElementById("ready-btn");
             const myReady = mySeat && room.seats[mySeat].ready;
             const waitingToStart = room.status === "playing" && !allReady(room);
@@ -493,6 +497,18 @@
             if (!window.confirm("¿Seguro que quieres rendirte? Tu rey seguirá moviéndose solo hasta que le den mate.")) return;
             game.resign(mySeat);
             await persist({});
+        });
+
+        document.getElementById("teacher-end-btn").addEventListener("click", async () => {
+            if (!isTeacher || room.status !== "playing") return;
+            if (!window.confirm("¿Terminar esta partida ahora? " + (room.mode === "ffa" ? "Se repartirán 10 puntos a cada jugador que siga activo." : "Quedará sin resultado (tablas).") )) return;
+            game.forceEnd();
+            const newSeats = JSON.parse(JSON.stringify(room.seats));
+            if (game.result && game.result.bonusPoints) {
+                Object.keys(game.result.bonusPoints).forEach((seat) => { newSeats[seat].score = (newSeats[seat].score || 0) + game.result.bonusPoints[seat]; });
+            }
+            room = Object.assign({}, room, { seats: newSeats });
+            await persist({ seats: newSeats });
         });
 
         async function initPlay() {
