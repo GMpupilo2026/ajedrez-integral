@@ -44,6 +44,26 @@ body { overflow-x: hidden; }
 .board-lite-grid[data-interactive="true"] .board-lite-square { cursor: pointer; }
 .board-lite-grid[data-interactive="false"] .board-lite-square { cursor: default; }
 
+/* ===== TABLERO AJEDREZ PARA 4 (cuatro-jugadores.html) =====
+   Grilla de 14x14; las 4 esquinas de 3x3 quedan ocultas (.fp-corner) para
+   que se vea en forma de cruz, 160 casillas jugables. */
+.fp-grid { display: grid; grid-template-columns: repeat(14, 1fr); width: 100%; max-width: 640px; margin: 0 auto; border: 4px solid #1e4d8b; border-radius: 0.5rem; overflow: hidden; box-shadow: 0 25px 60px rgba(37, 99, 235, 0.35); }
+.fp-corner { visibility: hidden; }
+.fp-square { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: clamp(0.8rem, 2.4vw, 1.5rem); line-height: 1; user-select: none; position: relative; }
+.fp-square.light { background: linear-gradient(135deg, #e0ecf8, #c3d9f0); }
+.fp-square.dark { background: linear-gradient(135deg, #2563eb, #1e4d8b); }
+.fp-grid[data-interactive="true"] .fp-square { cursor: pointer; }
+.fp-grid[data-interactive="false"] .fp-square { cursor: default; }
+.fp-square.legal-move::after { content: ''; position: absolute; width: 30%; height: 30%; border-radius: 999px; background: rgba(244, 196, 48, 0.6); pointer-events: none; }
+.fp-square.legal-capture { box-shadow: inset 0 0 0 3px rgba(244, 196, 48, 0.8); }
+.fp-square.selected { box-shadow: inset 0 0 0 3px #f4c430; }
+.fp-square.in-check { background: rgba(220, 38, 38, 0.55) !important; }
+.fp-piece-red { color: #ef4444; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+.fp-piece-blue { color: #60a5fa; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+.fp-piece-yellow { color: #facc15; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+.fp-piece-green { color: #4ade80; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+.fp-piece-dead { color: rgba(255,255,255,0.25); }
+
 @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
 @keyframes float-delay { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
 .animate-float { animation: float 3s ease-in-out infinite; }
