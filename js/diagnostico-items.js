@@ -200,7 +200,7 @@ window.DIAGNOSTICO_ITEMS = [
   },
   {
     id: 'tac_clavada_concepto', area: 'tactica', peso: 1, tipo: 'opcion',
-    enunciado: '¿Cómo se llama la táctica en la que una pieza no puede (o no conviene que) se mueva porque detrás de ella, en la misma línea, está su rey u otra pieza más valiosa?',
+    enunciado: '¿Cómo se llama la táctica en la que una pieza no puede moverse (o no conviene que se mueva) porque detrás de ella, en la misma línea, está su rey u otra pieza más valiosa?',
     opciones: ['Horquilla', 'Descubierta', 'Clavada', 'Ahogado'], correcta: 2,
     explica: 'Eso es una clavada: la pieza clavada queda inmovilizada (o penalizada si se mueve) porque expone algo más valioso detrás.',
   },
@@ -235,7 +235,7 @@ window.DIAGNOSTICO_ITEMS = [
   },
   {
     id: 'tac_rayos_x', area: 'tactica', peso: 3, tipo: 'opcion',
-    enunciado: '¿Qué es un "rayo X" (o clavada relativa) en ajedrez?',
+    enunciado: '¿Qué es un "rayo X" (el reverso de una clavada) en ajedrez?',
     opciones: [
       'Cuando una pieza ataca a través de otra hasta un objetivo más valioso detrás',
       'Cuando dos alfiles se cruzan en el centro del tablero',

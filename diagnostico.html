@@ -164,6 +164,12 @@
             return nivel;
         }
 
+        // Letra de pieza en inglés (SAN de chess.js) -> letra en español.
+        const LETRA_PIEZA_ES = { K: 'R', Q: 'D', R: 'T', B: 'A', N: 'C' };
+        function sanEspanol(san) {
+            return san.replace(/[KQRBN]/g, (letra) => LETRA_PIEZA_ES[letra]);
+        }
+
         // ===== Preparar preguntas: baraja las opciones de cada ítem (no el orden de las preguntas) =====
         function barajar(arr) {
             const copia = arr.slice();
@@ -187,10 +193,14 @@
                 // opcion_tablero: generamos la etiqueta de cada jugada (SAN) con chess.js,
                 // a partir de la MISMA fen del ítem, para que el texto del botón siempre
                 // coincida exactamente con lo que hace esa jugada en esa posición.
+                // chess.js devuelve el SAN con letras en inglés (K, Q, R, B, N); se
+                // convierte a las letras en español (R, D, T, A, C) que usa el resto
+                // del sitio y las explicaciones de estas mismas preguntas, para que el
+                // botón y el texto de "explica" siempre nombren la jugada igual.
                 const etiquetasCompletas = item.tablero.opciones.map((mv) => {
                     const c = new Chess(item.fen);
                     const r = c.move({ from: mv.from, to: mv.to, promotion: mv.promotion });
-                    return r ? r.san : `${mv.from}-${mv.to}`;
+                    return r ? sanEspanol(r.san) : `${mv.from}-${mv.to}`;
                 });
                 const indices = barajar(etiquetasCompletas.map((_, i) => i));
                 return {
