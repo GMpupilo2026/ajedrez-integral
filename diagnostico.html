@@ -24,6 +24,8 @@
         }
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="js/supabase-client.js"></script>
     <script src="js/diagnostico-items.js"></script>
 </head>
 <body class="font-sans bg-chess-dark text-white antialiased min-h-screen">
@@ -99,6 +101,34 @@
             </div>
         </section>
 
+        <!-- ===== DATOS DE CONTACTO (antes de mostrar el resultado) ===== -->
+        <section id="capture-screen" class="hidden">
+            <div class="text-center mb-8">
+                <span class="text-chess-sky font-semibold text-sm uppercase tracking-widest">Último paso</span>
+                <h2 class="font-display text-3xl sm:text-4xl font-bold mt-3 mb-4">¿A qué nombre guardamos tu resultado?</h2>
+                <p class="text-white/60 max-w-xl mx-auto">
+                    Así un profesor puede revisarlo y escribirte con una recomendación. El correo y el
+                    teléfono son opcionales, pero sin al menos uno de los dos no podremos contactarte.
+                </p>
+            </div>
+            <div class="feature-card !p-8 max-w-md mx-auto">
+                <label class="block text-sm font-medium mb-1" for="cap-nombre">Nombre *</label>
+                <input id="cap-nombre" type="text" required
+                    class="w-full mb-4 px-4 py-3 rounded-xl bg-white/5 border border-white/15 focus:border-chess-sky/60 outline-none"
+                    placeholder="Tu nombre">
+                <label class="block text-sm font-medium mb-1" for="cap-email">Correo (opcional)</label>
+                <input id="cap-email" type="email"
+                    class="w-full mb-4 px-4 py-3 rounded-xl bg-white/5 border border-white/15 focus:border-chess-sky/60 outline-none"
+                    placeholder="tu@correo.com">
+                <label class="block text-sm font-medium mb-1" for="cap-telefono">Teléfono / WhatsApp (opcional)</label>
+                <input id="cap-telefono" type="tel"
+                    class="w-full mb-2 px-4 py-3 rounded-xl bg-white/5 border border-white/15 focus:border-chess-sky/60 outline-none"
+                    placeholder="8888-0000">
+                <p id="cap-error" class="hidden text-sm text-red-300 mt-2"></p>
+                <button id="cap-submit-btn" class="btn-primary w-full mt-4 text-base px-8 py-4">Ver mi resultado</button>
+            </div>
+        </section>
+
         <!-- ===== RESULTADOS ===== -->
         <section id="result-screen" class="hidden">
             <div class="text-center mb-10">
@@ -146,15 +176,15 @@
 
         // Umbrales ascendentes: principiante < básico < intermedio < avanzado < experto.
         const NIVELES = [
-            { clave: 'principiante', desde: 0, etiqueta: 'Principiante', rango: 'menos de 800 aprox.',
+            { clave: 'principiante', desde: 0, etiqueta: 'Principiante', rango: 'menos de 800 aprox.', eloAprox: 600,
                 descripcion: 'Estás aprendiendo las reglas y a no dejar piezas gratis. Toca afianzar el reglamento y contar bien el material antes de avanzar.' },
-            { clave: 'basico', desde: 30, etiqueta: 'Básico', rango: '800 a 1100 aprox.',
+            { clave: 'basico', desde: 30, etiqueta: 'Básico', rango: '800 a 1100 aprox.', eloAprox: 950,
                 descripcion: 'Ya juegas partidas completas. Conviene reforzar la táctica elemental (horquillas, clavadas) y los mates más comunes.' },
-            { clave: 'intermedio', desde: 50, etiqueta: 'Intermedio', rango: '1100 a 1400 aprox.',
+            { clave: 'intermedio', desde: 50, etiqueta: 'Intermedio', rango: '1100 a 1400 aprox.', eloAprox: 1250,
                 descripcion: 'Tienes buena base. Ahora conviene trabajar finales, planes estratégicos y un cálculo más ordenado.' },
-            { clave: 'avanzado', desde: 70, etiqueta: 'Avanzado', rango: '1400 a 1700 aprox.',
+            { clave: 'avanzado', desde: 70, etiqueta: 'Avanzado', rango: '1400 a 1700 aprox.', eloAprox: 1550,
                 descripcion: 'Juegas bien en general. Te conviene estudiar por debilidades concretas y profundizar en aperturas propias.' },
-            { clave: 'experto', desde: 87, etiqueta: 'Experto', rango: '1700 o más aprox.',
+            { clave: 'experto', desde: 87, etiqueta: 'Experto', rango: '1700 o más aprox.', eloAprox: 1800,
                 descripcion: 'Nivel de competencia sólido. El siguiente paso es un repertorio propio, finales técnicos y análisis sistemático de tus partidas.' },
         ];
 
@@ -242,6 +272,7 @@
 
         const introScreen = document.getElementById('intro-screen');
         const quizScreen = document.getElementById('quiz-screen');
+        const captureScreen = document.getElementById('capture-screen');
         const resultScreen = document.getElementById('result-screen');
 
         function iniciar() {
@@ -249,6 +280,7 @@
             idx = 0;
             respuestas = [];
             introScreen.classList.add('hidden');
+            captureScreen.classList.add('hidden');
             resultScreen.classList.add('hidden');
             quizScreen.classList.remove('hidden');
             mostrarPregunta();
@@ -322,16 +354,16 @@
             if (idx < preguntas.length) {
                 mostrarPregunta();
             } else {
-                mostrarResultado();
+                quizScreen.classList.add('hidden');
+                captureScreen.classList.remove('hidden');
+                document.getElementById('cap-nombre').focus();
             }
         });
 
-        function mostrarResultado() {
-            quizScreen.classList.add('hidden');
-            resultScreen.classList.remove('hidden');
-            document.getElementById('progress-bar').style.width = '100%';
-
-            // Acumular peso logrado y peso total, global y por área.
+        // Junta el puntaje global y por área a partir de `respuestas` — lo usa
+        // tanto la pantalla de resultado como el guardado en Supabase, para no
+        // calcularlo dos veces de formas que puedan quedar desincronizadas.
+        function calcularResultado() {
             const porArea = {};
             Object.keys(AREAS).forEach((a) => { porArea[a] = { peso: 0, logrado: 0, aciertos: 0, total: 0 }; });
 
@@ -349,6 +381,63 @@
 
             const pctGlobal = pesoTotalGlobal ? Math.round((logradoGlobal / pesoTotalGlobal) * 100) : 0;
             const nivel = nivelDe(pctGlobal);
+            return { porArea, pctGlobal, nivel, aciertosGlobal };
+        }
+
+        // Intenta guardar el resultado en diagnosticos_publicos para que un
+        // profesor lo revise después. Si falla (sin red, RLS, etc.) no bloquea
+        // al visitante: igual se le muestra su resultado, solo queda sin guardar.
+        async function guardarDiagnostico(nombre, email, telefono) {
+            const { porArea, pctGlobal, nivel, aciertosGlobal } = calcularResultado();
+            const detalle = {
+                completado_en: new Date().toISOString(),
+                total_preguntas: respuestas.length,
+                aciertos_totales: aciertosGlobal,
+                por_area: Object.fromEntries(Object.entries(porArea).map(([clave, d]) => [
+                    clave, { aciertos: d.aciertos, total: d.total, pct: d.peso ? Math.round((d.logrado / d.peso) * 100) : 0 },
+                ])),
+                respuestas: respuestas.map((r) => ({ id: r.item.id, area: r.item.area, correcta: r.correcta })),
+            };
+            const payload = {
+                nombre, email: email || null, telefono: telefono || null,
+                elo: nivel.eloAprox, elo_tipo: 'estimado', porcentaje: pctGlobal, nivel: nivel.clave, detalle,
+            };
+            const tiempoLimite = new Promise((resolve) => setTimeout(() => resolve({ error: new Error('tiempo agotado') }), 8000));
+            try {
+                const { error } = await Promise.race([window.sb.from('diagnosticos_publicos').insert(payload), tiempoLimite]);
+                if (error) console.error('No se pudo guardar el diagnóstico:', error.message || error);
+            } catch (e) {
+                console.error('No se pudo guardar el diagnóstico:', e);
+            }
+        }
+
+        document.getElementById('cap-submit-btn').addEventListener('click', async () => {
+            const nombre = document.getElementById('cap-nombre').value.trim();
+            const email = document.getElementById('cap-email').value.trim();
+            const telefono = document.getElementById('cap-telefono').value.trim();
+            const errorEl = document.getElementById('cap-error');
+            if (!nombre) {
+                errorEl.textContent = 'Escribe tu nombre para continuar.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+            errorEl.classList.add('hidden');
+            const btn = document.getElementById('cap-submit-btn');
+            btn.disabled = true;
+            btn.textContent = 'Guardando…';
+            await guardarDiagnostico(nombre, email, telefono);
+            btn.disabled = false;
+            btn.textContent = 'Ver mi resultado';
+            mostrarResultado();
+        });
+
+        function mostrarResultado() {
+            quizScreen.classList.add('hidden');
+            captureScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            document.getElementById('progress-bar').style.width = '100%';
+
+            const { porArea, pctGlobal, nivel, aciertosGlobal } = calcularResultado();
 
             document.getElementById('result-nivel').textContent = `Nivel: ${nivel.etiqueta}`;
             document.getElementById('result-rango').textContent = `Elo aproximado: ${nivel.rango}`;
