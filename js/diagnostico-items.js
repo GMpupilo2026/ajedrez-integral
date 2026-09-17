@@ -1,7 +1,9 @@
 // Banco de preguntas del Diagnóstico de nivel — AjedrezIntegral.
 //
-// 56 preguntas repartidas en 8 áreas (7 cada una): reglas, material,
-// aperturas, táctica, mate, finales, estrategia y cálculo.
+// 225 preguntas repartidas en 9 áreas (25 cada una): reglas, material,
+// aperturas, táctica, mate, finales, estrategia, cálculo y, como tema
+// adicional un poco más difícil que el resto, maestría (reglas de
+// competencia, motores, historia del ajedrez y finales avanzados).
 //
 // Todas las preguntas son de opción múltiple con una única respuesta
 // correcta entre las alternativas mostradas ("tipo: 'opcion'" o, cuando se
@@ -19,7 +21,7 @@
 // Si se toca una posición, hay que volver a verificarla con chess.js.
 
 window.DIAGNOSTICO_ITEMS = [
-  // ===== REGLAS (7) =====
+  // ===== REGLAS (25) =====
   {
     id: 'reg_casillas', area: 'reglas', peso: 1, tipo: 'opcion',
     enunciado: '¿Cuántas casillas tiene un tablero de ajedrez?',
@@ -72,8 +74,176 @@ window.DIAGNOSTICO_ITEMS = [
     ], correcta: 1,
     explica: 'El peón puede coronar en cualquier pieza excepto rey (y excepto seguir siendo peón); no está obligado a elegir dama.',
   },
+  {
+    id: 'reg_condiciones_enroque', area: 'reglas', peso: 1, tipo: 'opcion',
+    enunciado: '¿Cuál de estas condiciones NO hace falta para poder enrocar?',
+    opciones: [
+      'Que el rival tenga menos de cinco minutos en el reloj',
+      'Que el rey y esa torre no se hayan movido en toda la partida',
+      'Que no haya piezas entre el rey y esa torre',
+      'Que el rey no esté en jaque, ni pase ni termine en una casilla atacada',
+    ], correcta: 0,
+    explica: 'El tiempo en el reloj del rival no tiene nada que ver con si el enroque es legal: las condiciones reales son que el rey y esa torre no se hayan movido, que no haya piezas entre medio, y que el rey no esté ni pase ni termine en jaque.',
+  },
+  {
+    id: 'reg_torre_enroque', area: 'reglas', peso: 1, tipo: 'opcion',
+    enunciado: '¿Qué torre participa en el enroque largo?',
+    opciones: ['La torre de la columna "a"', 'La torre de la columna "h"', 'Cualquiera de las dos torres', 'Ninguna: solo se mueve el rey'], correcta: 0,
+    explica: 'El enroque largo (O-O-O) mueve el rey hacia el flanco de dama y usa la torre de la columna "a"; el enroque corto (O-O) usa la torre de la columna "h".',
+  },
+  {
+    id: 'reg_repeticion', area: 'reglas', peso: 1, tipo: 'opcion',
+    enunciado: 'Si la misma posición se repite tres veces, con el mismo jugador en turno y los mismos derechos (enroque, al paso), ¿qué puede reclamar un jugador?',
+    opciones: ['Tablas por triple repetición', 'Una jugada extra', 'La victoria automática', 'Nada: la partida sigue igual'], correcta: 0,
+    explica: 'La triple repetición de posición (no necesariamente en jugadas seguidas) da derecho a reclamar tablas, sin importar quién esté mejor en el tablero.',
+  },
+  {
+    id: 'reg_50_jugadas', area: 'reglas', peso: 2, tipo: 'opcion',
+    enunciado: '¿Qué dice la "regla de las 50 jugadas"?',
+    opciones: [
+      'Si pasan 50 jugadas de cada bando sin captura ni movimiento de peón, se puede reclamar tablas',
+      'Una partida no puede durar más de 50 jugadas en total',
+      'Cada jugador tiene solo 50 segundos por jugada',
+      'Después de 50 jugadas, la dama pierde su valor',
+    ], correcta: 0,
+    explica: 'Si durante 50 jugadas seguidas de cada bando no hubo ninguna captura ni ningún movimiento de peón, cualquier jugador puede reclamar tablas: es una forma de evitar partidas eternas sin progreso real.',
+  },
+  {
+    id: 'reg_material_insuficiente', area: 'reglas', peso: 1, tipo: 'opcion',
+    enunciado: '¿Cuál de estos finales es tablas automáticas por material insuficiente para dar mate?',
+    opciones: ['Rey y alfil contra rey solo', 'Rey y dos torres contra rey solo', 'Rey y dama contra rey solo', 'Rey y dos alfiles de distinto color contra rey solo'], correcta: 0,
+    explica: 'Con solo rey y un alfil (o rey y un caballo) es imposible construir una red de mate contra el rey rival: la partida es tablas de inmediato. Con dos torres, una dama, o dos alfiles de distinto color sí se puede dar mate.',
+  },
+  {
+    id: 'reg_pieza_tocada', area: 'reglas', peso: 1, tipo: 'opcion',
+    enunciado: 'En una partida con la regla de "pieza tocada, pieza jugada", si tocas una pieza propia con intención de moverla…',
+    opciones: [
+      'Estás obligado a moverla si tiene alguna jugada legal',
+      'Puedes cambiar de opinión libremente sin ninguna consecuencia',
+      'Pierdes la partida de inmediato',
+      'Debes capturarla con otra pieza',
+    ], correcta: 0,
+    explica: 'La regla clásica de torneo obliga a mover la pieza que se tocó (si tiene jugada legal); por eso, para acomodar una pieza sin comprometerse a moverla, primero hay que avisar "compongo".',
+  },
+  {
+    id: 'reg_compongo', area: 'reglas', peso: 1, tipo: 'opcion',
+    enunciado: '¿Para qué sirve decir "compongo" (j\'adoube) antes de tocar una pieza?',
+    opciones: [
+      'Para poder acomodar una pieza en su casilla sin quedar obligado a moverla',
+      'Para pedir tablas',
+      'Para anunciar jaque mate',
+      'Para pedir más tiempo en el reloj',
+    ], correcta: 0,
+    explica: '"Compongo" avisa al rival que vas a enderezar una pieza mal colocada en su casilla, sin que eso cuente como haberla tocado para moverla.',
+  },
+  {
+    id: 'reg_piezas_iniciales', area: 'reglas', peso: 1, tipo: 'opcion',
+    enunciado: '¿Cuántas piezas tiene cada jugador al empezar la partida (incluyendo peones)?',
+    opciones: ['16', '12', '20', '8'], correcta: 0,
+    explica: 'Cada bando empieza con 16 piezas: 1 rey, 1 dama, 2 torres, 2 alfiles, 2 caballos y 8 peones.',
+  },
+  {
+    id: 'reg_peon_captura_diagonal', area: 'reglas', peso: 1, tipo: 'opcion',
+    enunciado: '¿Cómo captura un peón a una pieza rival?',
+    opciones: [
+      'En diagonal, una casilla hacia adelante (nunca hacia adelante en línea recta)',
+      'En línea recta hacia adelante, igual que se mueve normalmente',
+      'Hacia atrás, en diagonal',
+      'El peón no puede capturar piezas, solo avanzar',
+    ], correcta: 0,
+    explica: 'El peón avanza en línea recta pero captura en diagonal, una casilla hacia adelante: por eso una columna con un peón rival justo enfrente lo bloquea, pero no lo protege de una captura diagonal.',
+  },
+  {
+    id: 'reg_peon_primer_avance', area: 'reglas', peso: 1, tipo: 'opcion',
+    enunciado: 'Un peón que todavía no se ha movido, ¿cuántas casillas puede avanzar en su primera jugada?',
+    opciones: ['Una o dos casillas, a elección', 'Solo una casilla', 'Siempre dos casillas', 'Tres casillas'], correcta: 0,
+    explica: 'Únicamente en su primer movimiento, un peón puede avanzar una o dos casillas; después de esa primera jugada, solo puede avanzar de una en una.',
+  },
+  {
+    id: 'reg_bandera_tiempo', area: 'reglas', peso: 2, tipo: 'opcion',
+    enunciado: 'Si a un jugador se le acaba el tiempo en el reloj, ¿qué pasa normalmente?',
+    opciones: [
+      'Pierde la partida, salvo que el rival no tenga material suficiente para dar mate en ninguna secuencia, en cuyo caso son tablas',
+      'Siempre son tablas, sin excepción',
+      'El reloj se reinicia y la partida continúa',
+      'Gana automáticamente quien se quedó sin tiempo',
+    ], correcta: 0,
+    explica: 'Quedarse sin tiempo pierde la partida, con una excepción: si el rival no podría dar mate de ninguna manera posible (por ejemplo, con solo el rey), el resultado es tablas.',
+  },
+  {
+    id: 'reg_perpetuo', area: 'reglas', peso: 2, tipo: 'opcion',
+    enunciado: '¿Qué es el "jaque perpetuo" como recurso defensivo?',
+    opciones: [
+      'Una serie de jaques que el rival no puede evitar ni detener, que termina en tablas por repetición',
+      'Un jaque que gana la partida de inmediato',
+      'Un jaque mate especial con la dama',
+      'Un tipo de enroque',
+    ], correcta: 0,
+    explica: 'Cuando un bando está en problemas, a veces puede salvar la partida dando jaques sin parar: si el rival no puede escapar de esa cadena de jaques, la posición se repite y termina en tablas.',
+  },
+  {
+    id: 'reg_coordenadas', area: 'reglas', peso: 1, tipo: 'opcion',
+    enunciado: 'En la notación algebraica, ¿cómo se nombran las columnas y las filas del tablero?',
+    opciones: [
+      'Columnas con letras de la "a" a la "h", filas con números del 1 al 8',
+      'Columnas con números y filas con letras',
+      'Ambas con números, del 1 al 8',
+      'Ambas con letras, de la "a" a la "h"',
+    ], correcta: 0,
+    explica: 'Cada casilla se identifica por su columna (letra, a-h) y su fila (número, 1-8): por ejemplo, e4 es la columna "e", fila 4.',
+  },
+  {
+    id: 'reg_dama_inicial', area: 'reglas', peso: 2, tipo: 'opcion',
+    enunciado: 'Regla mnemotécnica clásica sobre dónde empieza cada dama: "la dama se coloca…"',
+    opciones: [
+      '…en su propio color: la dama blanca en una casilla clara (d1), la negra en una oscura (d8)',
+      '…siempre en una casilla oscura, sin importar el color',
+      '…siempre en la columna "e"',
+      '…al lado del rey rival',
+    ], correcta: 0,
+    explica: '"La dama se viste de su color" es la regla mnemotécnica: la dama blanca empieza en d1 (casilla clara) y la dama negra en d8 (casilla oscura).',
+  },
+  {
+    id: 'reg_notacion_captura', area: 'reglas', peso: 2, tipo: 'opcion',
+    enunciado: 'En notación algebraica, ¿qué indica la letra "x" dentro de una jugada (por ejemplo, "Axf6")?',
+    opciones: ['Que esa jugada es una captura', 'Que la pieza corona', 'Que es jaque', 'Que es un enroque'], correcta: 0,
+    explica: 'La "x" siempre marca una captura: "Axf6" significa que el alfil capturó una pieza rival en f6.',
+  },
+  {
+    id: 'reg_promocion_multiple', area: 'reglas', peso: 3, tipo: 'opcion',
+    enunciado: '¿Puede un jugador llegar a tener más de una dama al mismo tiempo en el tablero?',
+    opciones: [
+      'Sí: si corona un peón a dama mientras conserva su dama original (o corona varios peones)',
+      'No, cada bando solo puede tener una dama en toda la partida',
+      'Solo si la dama original ya fue capturada',
+      'Solo en partidas de ajedrez rápido',
+    ], correcta: 0,
+    explica: 'La corona no reemplaza a la dama original: si todavía la tienes en el tablero y coronas otro peón a dama, puedes terminar con dos, tres o hasta más damas al mismo tiempo.',
+  },
+  {
+    id: 'reg_tablas_mutuo_acuerdo', area: 'reglas', peso: 1, tipo: 'opcion',
+    enunciado: '¿Cómo se pueden acordar tablas entre los dos jugadores, sin que se dé ninguna de las otras reglas de tablas?',
+    opciones: [
+      'Un jugador ofrece tablas y el rival las acepta',
+      'Solo un árbitro puede decretar tablas por acuerdo',
+      'No existen las tablas por acuerdo, solo por reglamento',
+      'Hace falta que ambos se queden sin tiempo a la vez',
+    ], correcta: 0,
+    explica: 'En cualquier momento de la partida, un jugador puede ofrecer tablas (normalmente tras hacer su jugada); si el rival acepta, la partida termina en tablas por acuerdo mutuo.',
+  },
+  {
+    id: 'reg_torre_atacada_enroque', area: 'reglas', peso: 3, tipo: 'opcion',
+    enunciado: 'Si la torre con la que vas a enrocar está siendo atacada por una pieza rival (pero tu rey no está en jaque ni pasa por una casilla atacada), ¿el enroque sigue siendo legal?',
+    opciones: [
+      'Sí: solo importa que el REY no esté en jaque ni pase ni termine en una casilla atacada; la torre sí puede estar atacada',
+      'No, el enroque es ilegal si cualquiera de las dos piezas está atacada',
+      'Solo es legal si la torre atacada es la del flanco de dama',
+      'El enroque nunca es legal si hay alguna pieza rival atacando esa fila',
+    ], correcta: 0,
+    explica: 'La regla del enroque solo protege al REY (no puede estar en jaque, ni pasar ni terminar en una casilla atacada). La torre puede estar atacada, e incluso puede pasar por una casilla atacada, sin que eso afecte la legalidad del enroque.',
+  },
 
-  // ===== MATERIAL (7) =====
+  // ===== MATERIAL (25) =====
   {
     id: 'mat_peon', area: 'material', peso: 1, tipo: 'opcion',
     enunciado: '¿Cuál es el valor aproximado de un peón?',
@@ -131,8 +301,186 @@ window.DIAGNOSTICO_ITEMS = [
     ], correcta: 0,
     explica: 'Un solo alfil solo controla casillas de un color; tener los dos alfiles permite dominar todo el tablero, especialmente cuando hay pocos peones que les bloqueen las diagonales.',
   },
+  {
+    id: 'mat_valor_alfil', area: 'material', peso: 1, tipo: 'opcion',
+    enunciado: '¿Cuál es el valor aproximado de un alfil?',
+    opciones: ['1', '3', '5', '9'], correcta: 1,
+    explica: 'El alfil vale aproximadamente 3 peones, igual que el caballo, aunque su fuerza real depende mucho de la posición.',
+  },
+  {
+    id: 'mat_valor_rey', area: 'material', peso: 2, tipo: 'opcion',
+    enunciado: '¿Qué valor en puntos se le asigna al rey en las tablas de valores de material?',
+    opciones: [
+      'Ninguno: no se le asigna un valor de cambio, porque nunca se puede capturar ni cambiar',
+      'El mismo que la dama: 9 puntos',
+      'El mismo que la torre: 5 puntos',
+      '0 puntos, porque no ayuda a atacar',
+    ], correcta: 0,
+    explica: 'Al rey no se le da un valor de cambio porque jamás puede capturarse ni cambiarse por otra pieza; aun así, en los finales es una pieza muy activa y valiosa para el ataque.',
+  },
+  {
+    id: 'mat_pieza_menor', area: 'material', peso: 1, tipo: 'opcion',
+    enunciado: '¿Cómo se llama, en conjunto, a los alfiles y los caballos?',
+    opciones: ['Piezas menores', 'Piezas mayores', 'Piezas pesadas', 'Piezas centrales'], correcta: 0,
+    explica: 'Alfiles y caballos se agrupan como "piezas menores" por su valor similar (~3 puntos); torres y dama son las "piezas mayores" o "piezas pesadas".',
+  },
+  {
+    id: 'mat_pieza_mayor', area: 'material', peso: 1, tipo: 'opcion',
+    enunciado: '¿Cómo se llama, en conjunto, a las torres y la dama?',
+    opciones: ['Piezas mayores (o piezas pesadas)', 'Piezas menores', 'Piezas centrales', 'Piezas pasivas'], correcta: 0,
+    explica: 'Torres y dama son las "piezas mayores" o "piezas pesadas": tienen mayor valor y alcance que alfiles y caballos.',
+  },
+  {
+    id: 'mat_sacrificio', area: 'material', peso: 2, tipo: 'opcion',
+    enunciado: '¿Qué es un "sacrificio" en ajedrez?',
+    opciones: [
+      'Entregar material a propósito a cambio de una ventaja que no es material (ataque, iniciativa, jaque mate)',
+      'Perder una pieza por un descuido o error de cálculo',
+      'Cambiar dos piezas del mismo valor',
+      'Rendirse antes de que termine la partida',
+    ], correcta: 0,
+    explica: 'Un sacrificio es deliberado: se entrega material conscientemente porque la compensación (un ataque fuerte, mate forzado, etc.) vale más que el material entregado.',
+  },
+  {
+    id: 'mat_calidad_definicion', area: 'material', peso: 1, tipo: 'opcion',
+    enunciado: 'En ajedrez, ¿a qué se le llama exactamente "la calidad" (o "el cambio de calidad")?',
+    opciones: [
+      'A la diferencia de valor entre una torre y una pieza menor (alfil o caballo)',
+      'Al valor total de todas las piezas que quedan en el tablero',
+      'A qué tan bien juega un jugador, sin relación con el material',
+      'Al número de peones que le quedan a cada bando',
+    ], correcta: 0,
+    explica: '"La calidad" es específicamente la diferencia de valor entre una torre (5) y una pieza menor (3): ganar calidad es ganar una torre a cambio de una pieza menor; perderla es al revés.',
+  },
+  {
+    id: 'mat_final_practico', area: 'material', peso: 2, tipo: 'opcion',
+    enunciado: 'En un final con material por lo demás igualado, ¿qué suele significar tener un peón de más?',
+    opciones: [
+      'Una ventaja real, aunque convertirla en victoria todavía requiere buena técnica',
+      'Nada: un solo peón nunca influye en el resultado',
+      'La derrota automática para quien tiene menos peones',
+      'Que la partida se declara tablas de inmediato',
+    ], correcta: 0,
+    explica: 'Un peón de más es una ventaja genuina —sobre todo en finales—, pero convertirla en punto entero exige técnica: no gana sola, hay que saber jugarla.',
+  },
+  {
+    id: 'mat_cambiar_cuando_ganando', area: 'material', peso: 2, tipo: 'opcion',
+    enunciado: 'Si vas ganando en material, ¿qué principio práctico suele convenir?',
+    opciones: [
+      'Buscar cambiar piezas (no necesariamente peones) para simplificar hacia un final ganado',
+      'Evitar cualquier cambio de piezas a toda costa',
+      'Cambiar todos los peones lo antes posible',
+      'Sacrificar la ventaja para complicar la partida',
+    ], correcta: 0,
+    explica: 'Con ventaja de material, cambiar piezas (conservando peones, que ayudan a coronar) suele simplificar el camino a la victoria: menos piezas rivales significan menos contrajuego posible.',
+  },
+  {
+    id: 'mat_cambiar_cuando_perdiendo', area: 'material', peso: 2, tipo: 'opcion',
+    enunciado: 'Si vas perdiendo en material, ¿qué principio práctico suele convenir?',
+    opciones: [
+      'Evitar cambios de piezas y buscar complicaciones, para mantener chances prácticas',
+      'Cambiar todas las piezas posibles lo antes posible',
+      'Rendirse apenas se pierde el primer peón',
+      'Ofrecer tablas en cada jugada',
+    ], correcta: 0,
+    explica: 'Con desventaja de material conviene evitar simplificar: mientras más piezas queden en el tablero, más oportunidades hay de que el rival se equivoque o de generar complicaciones.',
+  },
+  {
+    id: 'mat_caballos_cerrado', area: 'material', peso: 2, tipo: 'opcion',
+    enunciado: '¿En qué tipo de posición suelen rendir mejor los caballos en comparación con los alfiles?',
+    opciones: [
+      'En posiciones cerradas, con peones trabados y pocas diagonales abiertas',
+      'En posiciones completamente abiertas, sin ningún peón',
+      'Los caballos nunca son mejores que los alfiles',
+      'Solo durante el enroque',
+    ], correcta: 0,
+    explica: 'El caballo salta por encima de los peones, así que no le afecta que la posición esté cerrada; el alfil, en cambio, necesita diagonales abiertas para ser fuerte.',
+  },
+  {
+    id: 'mat_tres_menores_dama', area: 'material', peso: 2, tipo: 'opcion',
+    enunciado: 'En términos de valor aproximado en puntos, ¿a qué suelen equivaler tres piezas menores (alfiles o caballos)?',
+    opciones: [
+      'Aproximadamente a una dama (3+3+3 = 9 puntos)',
+      'A menos de la mitad del valor de una dama',
+      'Siempre a menos que una sola torre',
+      'A exactamente el doble de una dama',
+    ], correcta: 0,
+    explica: 'Tres piezas menores valen alrededor de 9 puntos (3 cada una), el mismo valor aproximado que una dama, aunque el resultado real en la partida depende de la posición concreta.',
+  },
+  {
+    id: 'mat_torre_peon_dos_menores', area: 'material', peso: 2, tipo: 'opcion',
+    enunciado: 'En puntos, ¿a qué equivale aproximadamente una torre junto con un peón?',
+    opciones: [
+      'A dos piezas menores (5 + 1 = 6, parecido a 3 + 3)',
+      'A una dama completa',
+      'A un solo caballo',
+      'A nada: el peón no suma valor junto a una torre',
+    ], correcta: 0,
+    explica: 'Torre (5) más peón (1) suman 6 puntos, un valor cercano al de dos piezas menores (3 + 3 = 6): es un desequilibrio material clásico que muchos jugadores buscan a propósito.',
+  },
+  {
+    id: 'mat_ventaja_decisiva', area: 'material', peso: 3, tipo: 'opcion',
+    enunciado: 'Entre jugadores de nivel similar, ¿qué ventaja de material suele bastar para ganar con buena técnica?',
+    opciones: [
+      'Un solo peón de ventaja, bien jugado, ya puede ser decisivo',
+      'Hace falta ganar como mínimo una torre completa',
+      'El material nunca decide una partida, solo el ataque directo',
+      'Hace falta capturar la dama rival',
+    ], correcta: 0,
+    explica: 'Entre jugadores fuertes, una ventaja de un solo peón —bien manejada— suele ser suficiente para ganar; por eso el ajedrez de alto nivel se juega con tanto cuidado por cada peón.',
+  },
+  {
+    id: 'mat_pieza_atrapada', area: 'material', peso: 2, tipo: 'opcion',
+    enunciado: '¿Qué significa que una pieza esté "atrapada"?',
+    opciones: [
+      'Que no tiene ninguna casilla segura para escapar y previsiblemente será capturada',
+      'Que está clavada contra el rey',
+      'Que acaba de coronar',
+      'Que está enrocada',
+    ], correcta: 0,
+    explica: 'Una pieza atrapada no tiene a dónde ir sin ser capturada: aunque todavía se pueda mover, todas sus casillas de escape están controladas por el rival.',
+  },
+  {
+    id: 'mat_pieza_colgada', area: 'material', peso: 1, tipo: 'opcion',
+    enunciado: '¿A qué se le llama que una pieza esté "colgada" (hanging)?',
+    opciones: [
+      'A que no tiene ninguna defensa y el rival puede capturarla gratis',
+      'A que está a punto de coronar',
+      'A que está en la última fila',
+      'A que acaba de enrocar',
+    ], correcta: 0,
+    explica: 'Una pieza "colgada" está desprotegida: si el rival la captura, no hay ninguna recaptura posible y se pierde el material sin compensación.',
+  },
+  {
+    id: 'mat_conteo_rapido', area: 'material', peso: 1, tipo: 'opcion',
+    enunciado: 'Para saber rápido quién va ganando en material durante una partida, ¿qué conviene hacer?',
+    opciones: [
+      'Sumar el valor aproximado de las piezas de cada bando y comparar los totales',
+      'Contar solo el número de piezas, sin importar de qué tipo son',
+      'Ignorar los peones porque no cuentan',
+      'Fijarse solo en el tiempo que queda en el reloj',
+    ], correcta: 0,
+    explica: 'Sumar los valores aproximados (peón 1, menor 3, torre 5, dama 9) de cada bando y comparar da una idea rápida y confiable de quién tiene ventaja material.',
+  },
+  {
+    id: 'mat_comparar_caballo_peon', area: 'material', peso: 1, tipo: 'opcion',
+    enunciado: 'En la inmensa mayoría de posiciones, ¿qué vale más: un caballo o un peón?',
+    opciones: ['El caballo, con claridad (3 puntos contra 1)', 'El peón, siempre', 'Valen exactamente lo mismo', 'Depende únicamente del color de las piezas'], correcta: 0,
+    explica: 'El caballo (3 puntos) vale claramente más que un solo peón (1 punto); por eso entregar un caballo para ganar "solo" un peón casi nunca compensa.',
+  },
+  {
+    id: 'mat_piezas_pesadas_alcance', area: 'material', peso: 2, tipo: 'opcion',
+    enunciado: '¿Por qué torres y dama se consideran especialmente peligrosas al atacar al rey rival?',
+    opciones: [
+      'Porque tienen gran alcance a distancia (filas, columnas y, en el caso de la dama, también diagonales)',
+      'Porque solo ellas pueden dar jaque mate',
+      'Porque valen menos que las piezas menores',
+      'Porque no pueden ser capturadas',
+    ], correcta: 0,
+    explica: 'El gran alcance de torres y dama les permite atacar al rey desde lejos, sin necesidad de acercarse pieza a pieza como hacen alfiles o caballos.',
+  },
 
-  // ===== APERTURAS (7) =====
+  // ===== APERTURAS (25) =====
   {
     id: 'ap_principio', area: 'apertura', peso: 1, tipo: 'opcion',
     enunciado: 'En la apertura, ¿cuál de estos es un principio básico recomendado?',
@@ -190,8 +538,146 @@ window.DIAGNOSTICO_ITEMS = [
     opciones: ['Francesa', 'Siciliana', 'Escandinava', 'Alekhine'], correcta: 0,
     explica: '1.e4 e6 es la Defensa Francesa, de estructura sólida y con contrajuego típico en el flanco de dama.',
   },
+  {
+    id: 'ap_italiana', area: 'apertura', peso: 1, tipo: 'opcion',
+    enunciado: '1.e4 e5 2.Cf3 Cc6 3.Ac4 corresponde a la apertura…',
+    opciones: ['Italiana (Giuoco Piano)', 'Española (Ruy López)', 'Escocesa', 'Siciliana'], correcta: 0,
+    explica: 'Cuando el alfil blanco va a c4 en vez de b5, es la Apertura Italiana (o Giuoco Piano), apuntando directo hacia f7.',
+  },
+  {
+    id: 'ap_escocesa', area: 'apertura', peso: 1, tipo: 'opcion',
+    enunciado: '1.e4 e5 2.Cf3 Cc6 3.d4 corresponde a la apertura…',
+    opciones: ['Escocesa', 'Italiana', 'Española (Ruy López)', 'Francesa'], correcta: 0,
+    explica: 'Al jugar d4 en la tercera jugada para abrir el centro de inmediato, se trata de la Apertura Escocesa.',
+  },
+  {
+    id: 'ap_carokann', area: 'apertura', peso: 1, tipo: 'opcion',
+    enunciado: '1.e4 c6 corresponde a la Defensa…',
+    opciones: ['Caro-Kann', 'Siciliana', 'Francesa', 'Pirc'], correcta: 0,
+    explica: '1.e4 c6 es la Defensa Caro-Kann: prepara …d5 sin encerrar al alfil de casillas claras, a diferencia de la Francesa.',
+  },
+  {
+    id: 'ap_pirc', area: 'apertura', peso: 2, tipo: 'opcion',
+    enunciado: '1.e4 d6, seguido normalmente de …Cf6, …g6 y …Ag7, corresponde a la Defensa…',
+    opciones: ['Pirc', 'Caro-Kann', 'Escandinava', 'Nimzoindia'], correcta: 0,
+    explica: 'La Defensa Pirc deja que las blancas ocupen el centro con peones y contraataca luego con las piezas, fianchettando el alfil de rey en g7.',
+  },
+  {
+    id: 'ap_escandinava', area: 'apertura', peso: 1, tipo: 'opcion',
+    enunciado: '1.e4 d5 corresponde a la Defensa…',
+    opciones: ['Escandinava', 'Francesa', 'Caro-Kann', 'Alekhine'], correcta: 0,
+    explica: '1.e4 d5 es la Defensa Escandinava: las negras cambian el peón central de inmediato y suelen recapturar con la dama en d5.',
+  },
+  {
+    id: 'ap_alekhine', area: 'apertura', peso: 2, tipo: 'opcion',
+    enunciado: '1.e4 Cf6 corresponde a la Defensa…',
+    opciones: ['Alekhine', 'Escandinava', 'Pirc', 'India de Rey'], correcta: 0,
+    explica: '1.e4 Cf6 es la Defensa Alekhine: el caballo provoca que los peones blancos avancen, para atacarlos luego.',
+  },
+  {
+    id: 'ap_reti', area: 'apertura', peso: 2, tipo: 'opcion',
+    enunciado: '1.Cf3, sin definir todavía el destino de los peones centrales, suele llamarse Apertura…',
+    opciones: ['Réti', 'Inglesa', 'Española', 'Escocesa'], correcta: 0,
+    explica: 'La Apertura Réti empieza con 1.Cf3 y deja para más adelante cómo se van a mover los peones centrales, a menudo fianchettando un alfil.',
+  },
+  {
+    id: 'ap_inglesa', area: 'apertura', peso: 1, tipo: 'opcion',
+    enunciado: '1.c4 corresponde a la Apertura…',
+    opciones: ['Inglesa', 'Holandesa', 'India de Rey', 'Nimzoindia'], correcta: 0,
+    explica: '1.c4 es la Apertura Inglesa: ataca el centro desde el flanco de dama sin ocuparlo de inmediato con un peón central.',
+  },
+  {
+    id: 'ap_indiareina', area: 'apertura', peso: 2, tipo: 'opcion',
+    enunciado: '1.d4 Cf6 2.c4 g6, con la idea de seguir …Ag7, corresponde a la Defensa…',
+    opciones: ['India de Rey', 'Nimzoindia', 'Holandesa', 'Escandinava'], correcta: 0,
+    explica: 'La Defensa India de Rey deja que las blancas ocupen el centro y contraataca después con …e5 o …c5, apoyada en el fianchetto del alfil en g7.',
+  },
+  {
+    id: 'ap_nimzoindia', area: 'apertura', peso: 3, tipo: 'opcion',
+    enunciado: '1.d4 Cf6 2.c4 e6 3.Cc3 Ab4 corresponde a la Defensa…',
+    opciones: ['Nimzoindia', 'India de Rey', 'Holandesa', 'Gambito de Dama'], correcta: 0,
+    explica: 'Clavar el caballo de c3 con el alfil en b4 (en vez de jugar …d5) es la seña de identidad de la Defensa Nimzoindia.',
+  },
+  {
+    id: 'ap_holandesa', area: 'apertura', peso: 2, tipo: 'opcion',
+    enunciado: '1.d4 f5 corresponde a la Defensa…',
+    opciones: ['Holandesa', 'India de Rey', 'Nimzoindia', 'Benoni'], correcta: 0,
+    explica: '1.d4 f5 es la Defensa Holandesa: las negras luchan por el control de e4 desde el flanco de rey, aunque debilitan su propio rey.',
+  },
+  {
+    id: 'ap_londres', area: 'apertura', peso: 1, tipo: 'opcion',
+    enunciado: 'El "Sistema Londres" se caracteriza porque las blancas…',
+    opciones: [
+      'Desarrollan el alfil a f4 y arman casi la misma estructura de peones sin importar mucho cómo respondan las negras',
+      'Solo se puede jugar contra la Defensa Siciliana',
+      'Exige memorizar decenas de variantes forzadas',
+      'Se basa en sacrificar un peón en la primera jugada',
+    ], correcta: 0,
+    explica: 'El Sistema Londres es popular porque es un "sistema": se arma con las piezas en casillas parecidas (peón d4, alfil f4, etc.) sin depender demasiado de lo que juegue el rival.',
+  },
+  {
+    id: 'ap_fianchetto', area: 'apertura', peso: 1, tipo: 'opcion',
+    enunciado: '¿Qué es un "fianchetto"?',
+    opciones: [
+      'Desarrollar un alfil a b2/g2 (o b7/g7), después de avanzar el peón de esa columna',
+      'Un tipo de enroque especial',
+      'Sacrificar un peón por iniciativa',
+      'Otro nombre para la clavada',
+    ], correcta: 0,
+    explica: 'El fianchetto coloca el alfil en la diagonal larga (b2/g2 o b7/g7), después de mover el peón de esa columna (b3/g3 o b6/g6) para dejarle paso.',
+  },
+  {
+    id: 'ap_gambito_rey', area: 'apertura', peso: 2, tipo: 'opcion',
+    enunciado: '1.e4 e5 2.f4 es el…',
+    opciones: ['Gambito de Rey', 'Gambito de Dama', 'Ataque Colle', 'Sistema Londres'], correcta: 0,
+    explica: '1.e4 e5 2.f4 es el Gambito de Rey: las blancas ofrecen un peón para abrir la columna "f" y atacar rápido.',
+  },
+  {
+    id: 'ap_enroque_seguridad', area: 'apertura', peso: 1, tipo: 'opcion',
+    enunciado: '¿Por qué suele convenir enrocar antes de abrir demasiado el centro?',
+    opciones: [
+      'Porque pone al rey a salvo antes de que se abran columnas y diagonales peligrosas',
+      'Porque el enroque suma puntos de material',
+      'Porque es obligatorio por las reglas antes de la jugada 10',
+      'Porque impide que el rival desarrolle sus piezas',
+    ], correcta: 0,
+    explica: 'Enrocar temprano saca al rey del centro antes de que se abran líneas, que es justo cuando el rey está más expuesto a un ataque.',
+  },
+  {
+    id: 'ap_desarrollo_ordenado', area: 'apertura', peso: 1, tipo: 'opcion',
+    enunciado: 'En la apertura, ¿por qué se recomienda no mover dos veces la misma pieza sin una buena razón?',
+    opciones: [
+      'Porque cada jugada repetida es un "tiempo" de desarrollo que el rival puede aprovechar',
+      'Porque está prohibido por las reglas del ajedrez',
+      'Porque esa pieza queda inmovilizada para el resto de la partida',
+      'Porque pierde el derecho al enroque',
+    ], correcta: 0,
+    explica: 'Cada jugada de apertura que no desarrolla una pieza nueva (o no cumple otro propósito claro) es un "tiempo" que el rival puede usar para desarrollarse más rápido.',
+  },
+  {
+    id: 'ap_teoria_memorizar', area: 'apertura', peso: 2, tipo: 'opcion',
+    enunciado: 'Para un jugador principiante o intermedio, ¿qué suele ser más útil que memorizar largas variantes de apertura?',
+    opciones: [
+      'Entender las ideas y los planes típicos de la apertura que juega',
+      'Memorizar 20 jugadas exactas sin entender por qué',
+      'Cambiar de apertura en cada partida',
+      'Evitar estudiar aperturas por completo',
+    ], correcta: 0,
+    explica: 'Entender el plan detrás de una apertura (qué casillas controlar, qué plan seguir) ayuda incluso cuando el rival se sale de la teoría memorizada; la memorización pura falla apenas cambia algo.',
+  },
+  {
+    id: 'ap_transposicion', area: 'apertura', peso: 3, tipo: 'opcion',
+    enunciado: '¿Qué es una "transposición" de aperturas?',
+    opciones: [
+      'Llegar a la misma posición por un orden distinto de jugadas',
+      'Cambiar de bando a mitad de partida',
+      'Repetir la misma jugada tres veces',
+      'Un tipo de gambito poco común',
+    ], correcta: 0,
+    explica: 'Dos partidas pueden empezar con jugadas distintas y, sin embargo, "transponer" a la misma posición final; por eso el orden de jugadas en la apertura también importa.',
+  },
 
-  // ===== TÁCTICA (7) =====
+  // ===== TÁCTICA (25) =====
   {
     id: 'tac_horquilla_concepto', area: 'tactica', peso: 1, tipo: 'opcion',
     enunciado: '¿Cómo se llama la táctica en la que una pieza ataca simultáneamente a dos piezas rivales?',
@@ -250,8 +736,161 @@ window.DIAGNOSTICO_ITEMS = [
     opciones: ['Desviación (eliminación del defensor)', 'Enroque', 'Promoción', 'Ahogado'], correcta: 0,
     explica: 'La desviación (o "eliminación del defensor") ataca o atrae a la pieza que defiende algo importante para forzarla a moverse, dejando esa casilla o pieza sin protección.',
   },
+  {
+    id: 'tac_ataque_doble', area: 'tactica', peso: 1, tipo: 'opcion',
+    enunciado: '¿Cómo se le llama, en general, a cualquier jugada que amenaza dos objetivos rivales al mismo tiempo (no solo el caso del caballo)?',
+    opciones: ['Ataque doble', 'Enroque doble', 'Jaque perpetuo', 'Zugzwang'], correcta: 0,
+    explica: 'La horquilla es el caso más conocido de ataque doble (con una sola pieza), pero el término general "ataque doble" incluye cualquier jugada que amenace dos objetivos a la vez, sea con una pieza o mediante una descubierta.',
+  },
+  {
+    id: 'tac_clavada_absoluta', area: 'tactica', peso: 2, tipo: 'opcion',
+    enunciado: '¿Cómo se llama la clavada en la que la pieza clavada NO puede moverse bajo ninguna circunstancia, porque detrás de ella está el propio rey?',
+    opciones: ['Clavada absoluta', 'Clavada relativa', 'Horquilla', 'Rayos X'], correcta: 0,
+    explica: 'En la clavada absoluta, mover la pieza clavada sería ilegal porque dejaría al propio rey en jaque; por eso esa pieza está completamente inmovilizada.',
+  },
+  {
+    id: 'tac_clavada_relativa', area: 'tactica', peso: 2, tipo: 'opcion',
+    enunciado: '¿Cómo se llama la clavada en la que SÍ es legal mover la pieza clavada, pero conviene no hacerlo porque detrás hay una pieza más valiosa (no el rey)?',
+    opciones: ['Clavada relativa', 'Clavada absoluta', 'Descubierta', 'Desviación'], correcta: 0,
+    explica: 'En la clavada relativa mover la pieza es legal (detrás no está el rey), pero suele ser un mal negocio porque expondría a la captura una pieza de más valor.',
+  },
+  {
+    id: 'tac_jaque_descubierto', area: 'tactica', peso: 2, tipo: 'opcion',
+    enunciado: 'Cuando un "ataque descubierto" además da jaque al rey rival, ¿cómo se llama específicamente esa jugada?',
+    opciones: ['Jaque descubierto', 'Jaque doble', 'Jaque perpetuo', 'Jaque ahogado'], correcta: 0,
+    explica: 'El jaque descubierto es un caso particular del ataque descubierto: la pieza que se aparta deja al descubierto el jaque de la pieza que estaba detrás.',
+  },
+  {
+    id: 'tac_doble_jaque', area: 'tactica', peso: 3, tipo: 'opcion',
+    enunciado: 'En un "jaque doble", el rey rival queda en jaque por dos piezas a la vez (la que se mueve y la que descubre). ¿Qué es lo único que puede hacer el rival para librarse de él?',
+    opciones: [
+      'Mover el rey: no puede bloquear ni capturar ambos jaques a la vez',
+      'Capturar cualquiera de las dos piezas atacantes',
+      'Bloquear ambas líneas de jaque con una sola pieza',
+      'Nada: el jaque doble siempre es mate',
+    ], correcta: 0,
+    explica: 'Como hay dos piezas dando jaque al mismo tiempo, ni bloquear ni capturar puede librar de las dos a la vez: la única defensa posible es mover el rey.',
+  },
+  {
+    id: 'tac_atraccion', area: 'tactica', peso: 2, tipo: 'opcion',
+    enunciado: '¿Cómo se llama la táctica que obliga (a menudo con un sacrificio) a que una pieza rival, o el propio rey, se coloque en una casilla concreta y desfavorable?',
+    opciones: ['Atracción (o desviación hacia una casilla)', 'Enroque', 'Ahogado', 'Promoción'], correcta: 0,
+    explica: 'La atracción fuerza a una pieza (o al rey) a ir a una casilla específica, normalmente para que ahí quede expuesta a la siguiente jugada de la combinación.',
+  },
+  {
+    id: 'tac_interferencia', area: 'tactica', peso: 3, tipo: 'opcion',
+    enunciado: '¿En qué consiste la táctica de "interferencia"?',
+    opciones: [
+      'En interponer una pieza (a menudo sacrificada) entre una pieza rival y lo que defiende o ataca, cortando esa línea',
+      'En que dos piezas del mismo bando se estorban entre sí por accidente',
+      'En un tipo de enroque especial',
+      'En repetir la misma posición tres veces',
+    ], correcta: 0,
+    explica: 'La interferencia corta, a propósito, la comunicación entre una pieza rival y aquello que defiende o controla, interponiendo una pieza propia en esa línea.',
+  },
+  {
+    id: 'tac_zwischenzug', area: 'tactica', peso: 3, tipo: 'opcion',
+    enunciado: '¿Qué es una "jugada intermedia" (zwischenzug)?',
+    opciones: [
+      'Una jugada fuerte e inesperada que se intercala antes de hacer la recaptura o respuesta que el rival esperaba',
+      'La primera jugada de cualquier apertura',
+      'Una jugada que no cambia nada en la posición',
+      'Una jugada ilegal que se debe corregir',
+    ], correcta: 0,
+    explica: 'En vez de recapturar de inmediato como se esperaría, se intercala una jugada propia muy fuerte (a menudo con jaque o amenaza) antes de completar el intercambio.',
+  },
+  {
+    id: 'tac_molino', area: 'tactica', peso: 3, tipo: 'opcion',
+    enunciado: '¿Cómo se llama la táctica en la que un jaque descubierto se repite una y otra vez, capturando una pieza rival en cada vuelta?',
+    opciones: ['El molino (windmill)', 'El mate de la coz', 'El mate sofocado', 'La regla del cuadrado'], correcta: 0,
+    explica: 'En el molino, una pieza se retira dando jaque descubierto, captura algo, y vuelve a su casilla dando jaque de nuevo: el ciclo se repite arrasando material del rival.',
+  },
+  {
+    id: 'tac_combinacion_definicion', area: 'tactica', peso: 1, tipo: 'opcion',
+    enunciado: 'En ajedrez, ¿qué es una "combinación"?',
+    opciones: [
+      'Una secuencia forzada de jugadas, a menudo con sacrificio, que consigue una ventaja concreta',
+      'Cualquier jugada que desarrolla una pieza',
+      'Un tipo de apertura poco común',
+      'Sinónimo exacto de "estrategia"',
+    ], correcta: 0,
+    explica: 'Una combinación es una serie de jugadas forzadas (el rival casi no tiene alternativa) que termina en una ganancia clara de material o en jaque mate.',
+  },
+  {
+    id: 'tac_f7_debil', area: 'tactica', peso: 1, tipo: 'opcion',
+    enunciado: 'En las primeras jugadas de la partida, ¿por qué la casilla f7 (f2 para las blancas) suele ser un objetivo típico de ataques tempranos?',
+    opciones: [
+      'Porque al principio solo está defendida por el rey',
+      'Porque ahí siempre hay un peón pasado',
+      'Porque es la única casilla donde se puede enrocar',
+      'Porque el alfil no puede llegar nunca a esa casilla',
+    ], correcta: 0,
+    explica: 'Antes de enrocar, f7 (o f2) solo cuenta con el rey como defensor, lo que la vuelve un blanco típico para combinaciones tempranas.',
+  },
+  {
+    id: 'tac_mate_pastor', area: 'tactica', peso: 1, tipo: 'opcion',
+    enunciado: '¿Cómo se llama el intento de mate rápido que ataca la casilla f7 combinando la dama y el alfil desde la apertura?',
+    opciones: ['Mate pastor (Scholar\'s mate)', 'Mate sofocado', 'Mate de la escalera', 'Mate del pasillo'], correcta: 0,
+    explica: 'El mate pastor busca aprovechar que f7 está poco defendida al principio, combinando el alfil y la dama para dar mate en pocas jugadas si el rival no se defiende con cuidado.',
+  },
+  {
+    id: 'tac_trampa_apertura', area: 'tactica', peso: 2, tipo: 'opcion',
+    enunciado: '¿Qué es una "trampa de apertura"?',
+    opciones: [
+      'Una secuencia de jugadas que castiga tácticamente una respuesta natural pero incorrecta del rival',
+      'Una jugada ilegal camuflada',
+      'Un tipo de gambito que nunca se puede aceptar',
+      'Una regla especial que solo aplica en torneos',
+    ], correcta: 0,
+    explica: 'Las trampas de apertura aprovechan que ciertas jugadas "lógicas" esconden un error táctico; si el rival cae en la trampa, pierde material o la partida rápidamente.',
+  },
+  {
+    id: 'tac_sacrificio_griego', area: 'tactica', peso: 3, tipo: 'opcion',
+    enunciado: '¿Cómo se conoce el clásico sacrificio de alfil en h7 (o h2), capturando el peón frente al rey enrocado para abrir un ataque?',
+    opciones: ['El sacrificio griego (Axh7+)', 'El mate de la coz', 'El gambito de rey', 'La regla de Tarrasch'], correcta: 0,
+    explica: 'En el sacrificio griego, el alfil se entrega en h7 (o h2) para destapar al rey rival; suele seguir Cg5+ y la dama se suma al ataque por la columna o diagonal abierta.',
+  },
+  {
+    id: 'tac_atacar_clavada', area: 'tactica', peso: 2, tipo: 'opcion',
+    enunciado: 'Si el rival tiene una pieza clavada (sin ser el rey), ¿qué principio táctico conviene seguir?',
+    opciones: [
+      'Sumar más atacantes sobre la pieza clavada de los que el rival puede defenderla, ya que no puede huir',
+      'Ignorarla, porque una pieza clavada no se puede ganar nunca',
+      'Cambiarla de inmediato pieza por pieza',
+      'Retirar todas las piezas propias de esa zona',
+    ], correcta: 0,
+    explica: 'Una pieza clavada no puede escapar sin exponer algo más valioso: por eso conviene atacarla varias veces, ya que el defensor no puede sencillamente moverla para salvarla.',
+  },
+  {
+    id: 'tac_trampa_ahogado', area: 'tactica', peso: 2, tipo: 'opcion',
+    enunciado: 'Si vas claramente perdiendo, ¿qué recurso táctico defensivo puede rescatar la partida?',
+    opciones: [
+      'Buscar una posición de ahogado (stalemate) para el rey rival, logrando tablas',
+      'Ofrecer tablas repetidamente hasta que el rival acepte',
+      'Capturar la dama rival a cualquier costo',
+      'Enrocar en el último momento posible',
+    ], correcta: 0,
+    explica: 'Incluso en posiciones muy perdidas, a veces se puede maniobrar hacia una trampa de ahogado: dejar al rey rival sin ninguna jugada legal, sin que esté en jaque, logrando tablas.',
+  },
+  {
+    id: 'tac_despeje', area: 'tactica', peso: 3, tipo: 'opcion',
+    enunciado: '¿Cómo se llama la táctica de sacrificar o mover una pieza propia solo para dejar libre una casilla o una línea para otra pieza propia?',
+    opciones: ['Sacrificio (o jugada) de despeje', 'Enroque', 'Clavada', 'Ahogado'], correcta: 0,
+    explica: 'En un sacrificio de despeje, una pieza se aparta (a veces entregándose) únicamente para abrirle el camino a otra pieza propia, no para atacar directamente.',
+  },
+  {
+    id: 'tac_tactica_definicion', area: 'tactica', peso: 1, tipo: 'opcion',
+    enunciado: 'En términos generales, ¿qué es una "táctica" en ajedrez, a diferencia de la "estrategia"?',
+    opciones: [
+      'Una secuencia corta y forzada de jugadas para ganar material o dar mate',
+      'Un plan a largo plazo sin jugadas forzadas',
+      'Otro nombre para la apertura',
+      'Un tipo de final de peones',
+    ], correcta: 0,
+    explica: 'La táctica trabaja con jugadas forzadas a corto plazo (capturas, jaques, amenazas concretas); la estrategia, en cambio, son planes de más largo alcance sobre cómo mejorar la posición.',
+  },
 
-  // ===== MATE (7) =====
+  // ===== MATE (25) =====
   {
     id: 'mate_definicion', area: 'mate', peso: 1, tipo: 'opcion',
     enunciado: '¿Qué significa "jaque mate"?',
@@ -317,8 +956,181 @@ window.DIAGNOSTICO_ITEMS = [
     opciones: ['Mate de la escalera (staircase mate)', 'Mate ahogado', 'Enroque largo', 'Gambito de dama'], correcta: 0,
     explica: 'En el mate de la escalera, dos piezas de largo alcance se turnan para dar jaque, empujando al rey rival fila a fila (o columna a columna) hasta acorralarlo en el borde del tablero.',
   },
+  {
+    id: 'mate_torre_y_rey', area: 'mate', peso: 2, tipo: 'opcion',
+    enunciado: 'En el final de rey y torre contra rey solo, ¿cuál es la técnica básica para forzar el mate?',
+    opciones: [
+      'Usar la torre para encerrar al rey rival en una franja cada vez más pequeña, acercando el propio rey para ayudar',
+      'Dar jaques con la torre sin parar hasta que se produzca el mate por casualidad',
+      'Cambiar la torre por el rey rival',
+      'Avanzar los peones propios lo más rápido posible',
+    ], correcta: 0,
+    explica: 'Con torre y rey contra rey solo, la torre va reduciendo el espacio del rey rival (cortándole filas o columnas) mientras el propio rey se acerca a ayudar; sin el propio rey, la torre sola no puede dar mate.',
+  },
+  {
+    id: 'mate_dama_rey', area: 'mate', peso: 1, tipo: 'opcion',
+    enunciado: 'En el final de rey y dama contra rey solo, ¿qué error hay que evitar con más cuidado?',
+    opciones: [
+      'Ahogar sin querer al rey rival, dejándolo sin jaque pero sin ninguna jugada legal',
+      'Mover la dama demasiado lejos del rey propio',
+      'Enrocar antes de dar mate',
+      'Capturar el rey rival directamente',
+    ], correcta: 0,
+    explica: 'Con dama y rey de sobra, el peligro real es acercar demasiado la dama sin dejarle salida al rey rival: eso puede ahogarlo por accidente y convertir una victoria segura en tablas.',
+  },
+  {
+    id: 'mate_boden', area: 'mate', peso: 3, tipo: 'opcion',
+    enunciado: '¿Cómo se llama el patrón de mate en el que dos alfiles, en diagonales que se cruzan, cubren juntos todas las casillas de escape del rey rival?',
+    opciones: ['Mate de Boden', 'Mate árabe', 'Mate de Anastasía', 'Mate de Légal'], correcta: 0,
+    explica: 'El mate de Boden usa dos alfiles en diagonales cruzadas para cubrir, entre los dos, todas las casillas alrededor del rey rival, a menudo tras un sacrificio que abre esas diagonales.',
+  },
+  {
+    id: 'mate_arabe', area: 'mate', peso: 2, tipo: 'opcion',
+    enunciado: '¿Cómo se llama el mate típico en el que una torre da jaque mate en el borde del tablero mientras un caballo, desde una casilla cercana, le corta al rey su única casilla de escape?',
+    opciones: ['Mate árabe', 'Mate de Boden', 'Mate de la escalera', 'Mate sofocado'], correcta: 0,
+    explica: 'En el mate árabe, el caballo controla la casilla de escape del rey (encerrado en la esquina o el borde) mientras la torre da el jaque final por la fila o columna.',
+  },
+  {
+    id: 'mate_anastasia', area: 'mate', peso: 3, tipo: 'opcion',
+    enunciado: 'En el "mate de Anastasía", ¿qué papel cumple el caballo?',
+    opciones: [
+      'Le tapa al rey rival su única casilla de escape, mientras una torre o dama da jaque mate por el borde del tablero',
+      'Da el jaque mate final él mismo',
+      'Sacrifica su lugar para que corone un peón',
+      'Ataca a la dama rival, sin relación con el rey',
+    ], correcta: 0,
+    explica: 'En el mate de Anastasía, el rey rival queda atrapado contra el borde del tablero porque el caballo le tapa la única casilla de huida, y una torre o dama entrega el jaque mate por esa columna o fila.',
+  },
+  {
+    id: 'mate_legal', area: 'mate', peso: 3, tipo: 'opcion',
+    enunciado: 'El "mate de Légal" es una trampa clásica de apertura en la que las blancas…',
+    opciones: [
+      'Sacrifican la dama a propósito porque ya tienen preparado un mate forzado unas jugadas después',
+      'Ganan la dama rival sin dar nada a cambio',
+      'Fuerzan el enroque forzoso del rival',
+      'Evitan cualquier tipo de sacrificio',
+    ], correcta: 0,
+    explica: 'En el mate de Légal, las blancas entregan la dama deliberadamente porque ya tienen preparado un mate forzado con caballo y alfil unas jugadas después: el sacrificio es la clave de la combinación.',
+  },
+  {
+    id: 'mate_opera', area: 'mate', peso: 2, tipo: 'opcion',
+    enunciado: 'El "mate de la Ópera" —famoso por una partida de Paul Morphy— combina típicamente…',
+    opciones: [
+      'Una dama y una pieza mayor o menor para dar mate en la última fila, aprovechando que el rival tiene piezas propias sin desarrollar bloqueando su defensa',
+      'Dos caballos solamente',
+      'Un final de peones puros',
+      'Un sacrificio de calidad en el flanco de dama',
+    ], correcta: 0,
+    explica: 'El mate de la Ópera aprovecha que el rival tiene piezas sin desarrollar bloqueando su propia defensa, mientras la dama y otra pieza rematan por la última fila.',
+  },
+  {
+    id: 'mate_objetivo_final', area: 'mate', peso: 1, tipo: 'opcion',
+    enunciado: 'En términos generales, ¿cuál es el objetivo final de cualquier partida de ajedrez (más allá de cómo termine en la práctica)?',
+    opciones: ['Dar jaque mate al rey rival', 'Capturar todas las piezas rivales', 'Coronar el mayor número de peones', 'Quedarse con más tiempo en el reloj'], correcta: 0,
+    explica: 'Aunque muchas partidas terminan por abandono, tablas o por tiempo, el objetivo formal del ajedrez sigue siendo un único resultado: el jaque mate.',
+  },
+  {
+    id: 'mate_patrones_estudiar', area: 'mate', peso: 1, tipo: 'opcion',
+    enunciado: '¿Por qué conviene memorizar patrones de mate típicos (pasillo, sofocado, de la coz, etc.)?',
+    opciones: [
+      'Para reconocerlos rápido durante una partida, en vez de tener que descubrirlos desde cero cada vez',
+      'Porque son las únicas formas legales de dar mate',
+      'Porque el reglamento exige conocerlos',
+      'Porque solo así se puede enrocar',
+    ], correcta: 0,
+    explica: 'Reconocer patrones de mate ya vistos acelera muchísimo el cálculo: en vez de calcular todo desde cero, el jugador reconoce la estructura y busca directamente la jugada que la completa.',
+  },
+  {
+    id: 'mate_rey_borde', area: 'mate', peso: 1, tipo: 'opcion',
+    enunciado: 'En casi todos los mates con poco material en el tablero, ¿dónde suele terminar acorralado el rey rival?',
+    opciones: ['En el borde o una esquina del tablero, donde tiene menos casillas de escape', 'En el centro exacto del tablero', 'Siempre en su casilla inicial', 'Da igual: la posición del rey no influye en el mate'], correcta: 0,
+    explica: 'Cerca del borde o de una esquina, el rey tiene muchas menos casillas disponibles, lo que facilita muchísimo completar una red de mate con poco material.',
+  },
+  {
+    id: 'mate_ahogado_riesgo', area: 'mate', peso: 2, tipo: 'opcion',
+    enunciado: 'Al dar mate con mucho material de ventaja (por ejemplo, dama y rey contra rey solo), ¿qué error común hay que evitar con cuidado?',
+    opciones: [
+      'Dejar al rey rival sin jaque pero también sin ninguna jugada legal (ahogado), regalando las tablas',
+      'Dar demasiados jaques seguidos',
+      'Mover el rey propio con mucha frecuencia',
+      'Coronar un peón de más',
+    ], correcta: 0,
+    explica: 'Con ventaja aplastante es fácil, por descuido, encerrar al rey rival en una posición sin jaque y sin jugadas legales: eso es ahogado, y convierte una victoria segura en tablas.',
+  },
+  {
+    id: 'mate_torre_seguridad', area: 'mate', peso: 2, tipo: 'opcion',
+    enunciado: 'Al dar mate con dos torres contra el rey solo, ¿qué cuidado hay que tener con la torre que va a dar el jaque final?',
+    opciones: [
+      'Colocarla en una fila o columna donde el rey rival no pueda capturarla',
+      'Colocarla siempre en la primera fila',
+      'Sacrificarla antes del mate final',
+      'Mantenerla lo más lejos posible del rey propio',
+    ], correcta: 0,
+    explica: 'Si la torre que da jaque queda en una casilla adyacente al rey rival y sin protección, el rey simplemente la captura; por eso siempre debe quedar fuera de su alcance.',
+  },
+  {
+    id: 'mate_rey_solo_activo', area: 'mate', peso: 1, tipo: 'opcion',
+    enunciado: 'En los finales de mate con poco material, ¿qué pieza propia resulta fundamental acercar para ayudar a completar el mate?',
+    opciones: ['El propio rey, que debe participar activamente', 'La dama, que siempre basta por sí sola', 'Los peones que queden en el tablero', 'Ninguna: las piezas mayores bastan solas'], correcta: 0,
+    explica: 'Salvo con dama y torre de sobra, casi todos los finales de mate necesitan que el propio rey se acerque y participe activamente para cerrar la red sobre el rey rival.',
+  },
+  {
+    id: 'mate_valor_practico', area: 'mate', peso: 2, tipo: 'opcion',
+    enunciado: '¿Por qué dar jaque mate es preferible a seguir ganando más material, cuando ambas opciones están disponibles?',
+    opciones: [
+      'Porque el mate termina la partida de inmediato, sin importar cuánto material quede en el tablero',
+      'Porque ganar más material está prohibido por las reglas',
+      'Porque el material no vale nada en el ajedrez',
+      'Porque dar mate suma puntos extra en el resultado',
+    ], correcta: 0,
+    explica: 'El resultado de la partida no depende de cuánto material se acumule, sino de si hay jaque mate: por eso, si el mate está disponible, siempre conviene tomarlo en vez de seguir ganando piezas.',
+  },
+  {
+    id: 'mate_luft', area: 'mate', peso: 1, tipo: 'opcion',
+    enunciado: '¿Cómo se puede prevenir un futuro mate del pasillo antes de que sea un problema?',
+    opciones: [
+      'Haciendo una "casilla de aire" (luft): avanzar un peón cercano al rey para darle una salida',
+      'Cambiando todas las piezas mayores propias',
+      'Evitando enrocar durante toda la partida',
+      'Retrasando el desarrollo de las piezas',
+    ], correcta: 0,
+    explica: '"Luft" (aire, en alemán) es avanzar un peón junto al rey enrocado para darle una casilla de escape, evitando quedar atrapado en la última fila si llega una torre o dama rival con jaque.',
+  },
+  {
+    id: 'mate_dos_alfiles_tecnica', area: 'mate', peso: 3, tipo: 'opcion',
+    enunciado: 'Al forzar mate con rey y dos alfiles contra rey solo, ¿en qué esquina se puede completar el mate?',
+    opciones: [
+      'En cualquier esquina del tablero: los dos alfiles, entre los dos, cubren casillas de ambos colores',
+      'Solo en la esquina que coincide con el color de uno de los alfiles',
+      'Nunca se puede forzar: siempre son tablas',
+      'Solo si además hay un peón en el tablero',
+    ], correcta: 0,
+    explica: 'A diferencia del final de alfil y caballo, con dos alfiles (uno de cada color de casilla) se puede forzar el mate en cualquier esquina, porque entre los dos controlan casillas de ambos colores.',
+  },
+  {
+    id: 'mate_alfil_caballo_tecnica', area: 'mate', peso: 3, tipo: 'opcion',
+    enunciado: 'El final de rey, alfil y caballo contra rey solo (a veces el más difícil de los mates básicos) tiene una particularidad conocida: el mate solo se puede forzar…',
+    opciones: [
+      'En la esquina del mismo color que las casillas que controla el alfil',
+      'En cualquier esquina del tablero, sin ninguna restricción',
+      'Únicamente en el centro del tablero',
+      'Solo si el rival comete un error',
+    ], correcta: 0,
+    explica: 'A diferencia de rey y dos alfiles, con alfil y caballo el mate solo se puede forzar en la esquina del color que corresponde al alfil: en la esquina del color contrario, el rey defensor escapa a las tablas por ahogado.',
+  },
+  {
+    id: 'mate_practica_basica', area: 'mate', peso: 1, tipo: 'opcion',
+    enunciado: '¿Cuáles son, en general, los finales de mate "básicos" que conviene dominar de memoria desde el principio?',
+    opciones: [
+      'Rey y dama contra rey, rey y torre contra rey, y rey con dos alfiles contra rey',
+      'Solo el final de rey y peón contra rey',
+      'Únicamente los finales con más de dos torres',
+      'Ninguno: todos los mates se improvisan sobre la marcha',
+    ], correcta: 0,
+    explica: 'Rey y dama, rey y torre, y rey con dos alfiles contra un rey solo son los finales de mate más frecuentes y relativamente sencillos de forzar; dominarlos de memoria ahorra tiempo y evita errores como el ahogado.',
+  },
 
-  // ===== FINALES (7) =====
+  // ===== FINALES (25) =====
   {
     id: 'fin_rey_activo', area: 'finales', peso: 1, tipo: 'opcion',
     enunciado: 'En los finales, ¿qué suele ser más importante que en la apertura?',
@@ -398,8 +1210,206 @@ window.DIAGNOSTICO_ITEMS = [
     ], correcta: 0,
     explica: 'Los finales de alfiles de distinto color son famosos por sus tablas "de manual": el alfil defensor puede bloquear para siempre las casillas de su color, aunque el rival tenga varios peones de más.',
   },
+  {
+    id: 'fin_zugzwang', area: 'finales', peso: 2, tipo: 'opcion',
+    enunciado: '¿Qué es el "zugzwang" en ajedrez?',
+    opciones: [
+      'Una posición en la que estar obligado a mover empeora la posición propia (cualquier jugada disponible es mala)',
+      'Una apertura poco frecuente',
+      'Un tipo de sacrificio de dama',
+      'Sinónimo de jaque mate',
+    ], correcta: 0,
+    explica: 'En zugzwang, no mover sería lo ideal, pero las reglas obligan a jugar: cualquier jugada disponible empeora la posición propia. Es un tema central en los finales de peones.',
+  },
+  {
+    id: 'fin_triangulacion', area: 'finales', peso: 3, tipo: 'opcion',
+    enunciado: '¿Para qué sirve la técnica de "triangulación" con el rey en los finales de peones?',
+    opciones: [
+      'Para hacer tres jugadas en vez de una y así "perder un tiempo" a propósito, cediéndole al rival la obligación de mover',
+      'Para llegar más rápido al peón pasado',
+      'Para evitar el ahogado del rey propio',
+      'Para defender dos peones a la vez',
+    ], correcta: 0,
+    explica: 'Triangular es mover el rey en un pequeño triángulo de casillas para terminar en la misma posición pero con el turno cambiado: así se le puede ceder la obligación de mover al rival, ganando la oposición.',
+  },
+  {
+    id: 'fin_casillas_correspondientes', area: 'finales', peso: 3, tipo: 'opcion',
+    enunciado: 'En finales de rey y peones más complejos, ¿qué son las "casillas correspondientes"?',
+    opciones: [
+      'Pares de casillas tales que, si un rey está en una, el otro rey debe estar en la suya para mantener el equilibrio (y perderlo si no puede)',
+      'Las casillas donde puede coronar un peón',
+      'Las casillas del mismo color en el tablero',
+      'Las casillas donde el rey puede enrocar',
+    ], correcta: 0,
+    explica: 'Las casillas correspondientes son una extensión avanzada de la oposición: mapean qué casilla debe ocupar el rey defensor por cada casilla del rey atacante para no quedar en zugzwang.',
+  },
+  {
+    id: 'fin_peon_protegido_pasado', area: 'finales', peso: 2, tipo: 'opcion',
+    enunciado: '¿Por qué un "peón pasado protegido" (defendido por otro peón propio) es especialmente fuerte?',
+    opciones: [
+      'Porque el rey rival no puede capturarlo sin perder material, y además avanza con apoyo',
+      'Porque corona automáticamente sin necesidad de más jugadas',
+      'Porque nunca se puede bloquear',
+      'Porque vale el doble de puntos que un peón normal',
+    ], correcta: 0,
+    explica: 'Un peón pasado protegido no se puede capturar con el rey (perdería el peón defensor a cambio), lo que lo hace mucho más difícil de frenar que un peón pasado sin apoyo.',
+  },
+  {
+    id: 'fin_lucena', area: 'finales', peso: 3, tipo: 'opcion',
+    enunciado: '¿Para qué es famosa la "posición de Lucena" en los finales de torre y peón contra torre?',
+    opciones: [
+      'Es la técnica ganadora clave (construir un "puente" con la torre) para coronar el peón a pesar de la torre rival',
+      'Es una posición siempre tablas, sin importar quién mueva',
+      'Es un patrón de mate con dos torres',
+      'Es un final de solo peones, sin torres',
+    ], correcta: 0,
+    explica: 'La posición de Lucena muestra cómo el bando con torre y peón de más puede "construir un puente" con su torre para proteger al rey de los jaques y coronar el peón, ganando la partida.',
+  },
+  {
+    id: 'fin_philidor', area: 'finales', peso: 2, tipo: 'opcion',
+    enunciado: '¿Para qué es famosa la "posición de Philidor" en los finales de torre contra torre y peón?',
+    opciones: [
+      'Es la técnica defensiva clave para hacer tablas, manteniendo la torre en la tercera (o sexta) fila',
+      'Es la técnica para ganar siempre con un peón de más',
+      'Es un patrón de mate con torre y caballo',
+      'Es un método para capturar la torre rival',
+    ], correcta: 0,
+    explica: 'La posición de Philidor enseña cómo el bando defensor (sin el peón) puede lograr tablas manteniendo la torre en la tercera fila (o la sexta, según el lado) para no dejar avanzar al rey rival.',
+  },
+  {
+    id: 'fin_peones_conectados', area: 'finales', peso: 1, tipo: 'opcion',
+    enunciado: '¿Por qué dos peones pasados y conectados (uno al lado del otro) son especialmente peligrosos en un final?',
+    opciones: [
+      'Porque se protegen mutuamente al avanzar y el rey rival no puede detener a los dos a la vez',
+      'Porque valen el doble de puntos que peones normales',
+      'Porque no pueden ser capturados nunca',
+      'Porque obligan a un enroque inmediato',
+    ], correcta: 0,
+    explica: 'Dos peones pasados conectados se cubren el uno al otro mientras avanzan: si el rey rival detiene a uno, el otro sigue su camino hacia la coronación.',
+  },
+  {
+    id: 'fin_rincon_malo', area: 'finales', peso: 3, tipo: 'opcion',
+    enunciado: 'En un final de peón de torre (columna "a" o "h") contra rey y alfil del color contrario a la casilla de coronación, ¿qué suele pasar?',
+    opciones: [
+      'Es tablas si el rey defensor llega a tiempo a la esquina de coronación, sin importar cuántos peones de ventaja haya',
+      'Siempre gana quien tiene el peón, sin excepción',
+      'El alfil siempre puede detener el peón sin ayuda del rey',
+      'Es tablas solo si el bando con el peón tiene menos de tres peones en total',
+    ], correcta: 0,
+    explica: 'Con un peón de la columna "a" o "h" cuya casilla de coronación es del color contrario al alfil defensor, el rey defensor puede refugiarse en esa esquina y el resultado es tablas, aunque el bando atacante tenga varios peones más.',
+  },
+  {
+    id: 'fin_rey_delante_peon', area: 'finales', peso: 2, tipo: 'opcion',
+    enunciado: 'Como principio general en finales de rey y peón, ¿dónde conviene tener al propio rey respecto a su peón pasado?',
+    opciones: [
+      'Delante del peón (hacia la coronación), abriéndole camino',
+      'Detrás del peón, empujándolo desde atrás',
+      'Siempre en el flanco contrario',
+      'No importa la posición del rey en este tipo de final',
+    ], correcta: 0,
+    explica: 'El rey debe adelantarse y despejar el camino del peón hacia la coronación; si se queda detrás, el peón avanza sin apoyo y es más fácil de detener.',
+  },
+  {
+    id: 'fin_finales_teoricos_estudiar', area: 'finales', peso: 1, tipo: 'opcion',
+    enunciado: '¿Por qué conviene estudiar "finales teóricos" (posiciones ya analizadas al detalle, como Lucena o Philidor)?',
+    opciones: [
+      'Porque tienen una técnica exacta ya conocida que garantiza el resultado correcto, sin calcular todo desde cero',
+      'Porque son las únicas posiciones legales del ajedrez',
+      'Porque solo aparecen en partidas de altísimo nivel',
+      'Porque reemplazan la necesidad de aprender táctica',
+    ], correcta: 0,
+    explica: 'Un final teórico ya tiene su resultado y su técnica bien establecidos: conocerlo de memoria evita errores bajo presión y ahorra mucho tiempo de cálculo en la partida real.',
+  },
+  {
+    id: 'fin_peon_pasado_lejano', area: 'finales', peso: 2, tipo: 'opcion',
+    enunciado: '¿Por qué un "peón pasado alejado" (lejos de donde están los reyes) suele ser una ventaja decisiva en finales de peones?',
+    opciones: [
+      'Porque distrae al rey rival: si va a detenerlo, se aleja de la acción principal en el otro flanco',
+      'Porque corona más rápido que cualquier otro peón',
+      'Porque no se le puede aplicar la regla del cuadrado',
+      'Porque siempre está protegido por otro peón',
+    ], correcta: 0,
+    explica: 'Un peón pasado alejado obliga al rey defensor a elegir: si va a detenerlo, se aleja de donde realmente se decide la partida, dejando el resto del tablero sin defensa.',
+  },
+  {
+    id: 'fin_regla_cuadrado_excepcion', area: 'finales', peso: 2, tipo: 'opcion',
+    enunciado: 'La "regla del cuadrado" para saber si el rey alcanza a un peón pasado tiene una excepción importante: hay que agrandar el cuadrado si…',
+    opciones: [
+      'El peón todavía no se ha movido y puede avanzar dos casillas en su primera jugada',
+      'El rey defensor tiene más de un peón propio',
+      'Es el turno de las blancas',
+      'El peón está en una columna central',
+    ], correcta: 0,
+    explica: 'Si el peón conserva la opción de avanzar dos casillas en su primer movimiento, el "cuadrado" que hay que dibujar para la regla es más grande de lo normal, porque el peón puede recorrer esa distancia extra de un solo salto.',
+  },
+  {
+    id: 'fin_alfiles_mismo_color', area: 'finales', peso: 1, tipo: 'opcion',
+    enunciado: 'A diferencia del final de alfiles de distinto color, en un final de alfiles del MISMO color con un peón de ventaja…',
+    opciones: [
+      'Suele ser mucho más sencillo convertir la ventaja en victoria',
+      'También suelen ser tablas casi siempre',
+      'Los alfiles no pueden capturarse entre sí en ningún caso',
+      'El resultado es siempre tablas si hay menos de cuatro peones',
+    ], correcta: 0,
+    explica: 'Con alfiles del mismo color, ambos controlan las mismas casillas, así que no existe el efecto de bloqueo permanente típico del final de alfiles de distinto color: una ventaja de peón suele bastar para ganar.',
+  },
+  {
+    id: 'fin_torres_mas_comunes', area: 'finales', peso: 1, tipo: 'opcion',
+    enunciado: '¿Por qué se dice que los finales de torres son los más frecuentes en la práctica?',
+    opciones: [
+      'Porque la torre suele ser de las últimas piezas mayores en cambiarse, y muchas partidas llegan a esa fase',
+      'Porque las reglas obligan a conservar las torres hasta el final',
+      'Porque los alfiles y caballos se cambian obligatoriamente antes',
+      'Porque las torres no pueden coronar, así que sobreviven más tiempo',
+    ], correcta: 0,
+    explica: 'Como las torres suelen entrar en juego más tarde y cambiarse después que las piezas menores, una gran parte de las partidas llega a un final donde ambos bandos todavía conservan torres.',
+  },
+  {
+    id: 'fin_reyes_flancos_opuestos', area: 'finales', peso: 2, tipo: 'opcion',
+    enunciado: 'Si, por la razón que sea, el rey defensor queda muy lejos del flanco donde el rival tiene un peón pasado, ¿qué puede pasar?',
+    opciones: [
+      'El peón puede avanzar y coronar sin que la "regla del cuadrado" alcance a cubrir esa distancia con el rey defensor',
+      'El peón deja de ser peligroso automáticamente',
+      'Solo el alfil puede detenerlo, nunca el rey',
+      'Se declaran tablas por posición de fortaleza',
+    ], correcta: 0,
+    explica: 'Cuando el rey defensor está demasiado lejos, sencillamente no entra a tiempo en el "cuadrado" del peón pasado, y este corona sin poder ser detenido.',
+  },
+  {
+    id: 'fin_finales_tiempo_valioso', area: 'finales', peso: 1, tipo: 'opcion',
+    enunciado: 'En un final ajustado, ¿por qué cada jugada (cada "tiempo") suele valer mucho más que en la apertura?',
+    opciones: [
+      'Porque hay menos piezas y mucho menos margen de error: una jugada de más o de menos puede decidir el resultado',
+      'Porque en los finales el reloj corre más rápido por regla',
+      'Porque las piezas valen menos puntos en los finales',
+      'Porque ya no importa el orden de las jugadas',
+    ], correcta: 0,
+    explica: 'Con menos piezas en el tablero, cada jugada pesa mucho más: perder un solo tiempo puede ser la diferencia entre ganar, hacer tablas o incluso perder.',
+  },
+  {
+    id: 'fin_rey_pasivo_error', area: 'finales', peso: 2, tipo: 'opcion',
+    enunciado: '¿Cuál es un error común de jugadores principiantes en los finales?',
+    opciones: [
+      'Mantener el rey pasivo y escondido, en vez de activarlo cuando ya hay pocas piezas atacantes rivales',
+      'Activar demasiado pronto al rey',
+      'Cambiar demasiadas piezas',
+      'Avanzar los peones con demasiada rapidez',
+    ], correcta: 0,
+    explica: 'Por costumbre de protegerlo durante toda la partida, muchos jugadores dejan al rey escondido incluso en los finales, cuando ya hay poco peligro real y el rey debería sumarse como una pieza más.',
+  },
+  {
+    id: 'fin_conversion_ventaja', area: 'finales', peso: 2, tipo: 'opcion',
+    enunciado: '¿Qué significa "convertir una ventaja" en un final?',
+    opciones: [
+      'Transformar una ventaja (material, de peones, posicional) en una victoria efectiva, con la técnica precisa que evita que el rival escape a tablas',
+      'Cambiar el tipo de ventaja, por ejemplo, de material a tiempo en el reloj',
+      'Sacrificar la ventaja para complicar la partida',
+      'Rendirse cuando ya se tiene ventaja suficiente',
+    ], correcta: 0,
+    explica: 'Tener ventaja no gana la partida por sí sola: "convertirla" significa jugar el final con la técnica correcta para que esa ventaja realmente se traduzca en el punto entero.',
+  },
 
-  // ===== ESTRATEGIA (7) =====
+  // ===== ESTRATEGIA (25) =====
   {
     id: 'est_centro_concepto', area: 'estrategia', peso: 1, tipo: 'opcion',
     enunciado: '¿Qué significa "controlar el centro" en ajedrez?',
@@ -477,8 +1487,206 @@ window.DIAGNOSTICO_ITEMS = [
     ], correcta: 0,
     explica: 'Una mayoría de peones en un flanco es una ventaja a largo plazo: con buen manejo, puede convertirse en un peón pasado que decida el final.',
   },
+  {
+    id: 'est_peon_doblado', area: 'estrategia', peso: 1, tipo: 'opcion',
+    enunciado: '¿Qué son los "peones doblados"?',
+    opciones: [
+      'Dos peones propios en la misma columna, que no pueden protegerse entre sí',
+      'Dos peones que avanzaron dos casillas en la misma jugada',
+      'Dos peones del mismo color de casilla',
+      'Dos peones enemigos capturados en la misma jugada',
+    ], correcta: 0,
+    explica: 'Los peones doblados quedan uno delante del otro en la misma columna: no se defienden mutuamente y controlan menos casillas juntos que si estuvieran separados, aunque a veces abren una columna útil para la torre.',
+  },
+  {
+    id: 'est_peon_retrasado', area: 'estrategia', peso: 2, tipo: 'opcion',
+    enunciado: '¿Qué es un "peón retrasado"?',
+    opciones: [
+      'Un peón que se quedó detrás de sus vecinos y no puede avanzar sin quedar débil, con la casilla delante de él controlada por el rival',
+      'Un peón que todavía no se ha movido en toda la partida',
+      'Un peón que va a coronar en la siguiente jugada',
+      'Un peón capturado al paso',
+    ], correcta: 0,
+    explica: 'El peón retrasado no puede avanzar con seguridad porque la casilla justo delante suele estar controlada por el rival, y sus propios peones vecinos ya avanzaron y no pueden protegerlo.',
+  },
+  {
+    id: 'est_cadena_peones', area: 'estrategia', peso: 2, tipo: 'opcion',
+    enunciado: 'En una "cadena de peones" (varios peones propios en diagonal, apoyándose uno a otro), ¿cuál es el punto más débil para atacar?',
+    opciones: [
+      'La base de la cadena (el peón de más atrás, que no está defendido por otro peón)',
+      'La punta de la cadena, más avanzada',
+      'Siempre el peón central',
+      'El peón que está en la columna del rey',
+    ], correcta: 0,
+    explica: 'El principio clásico dice que hay que atacar la base de la cadena de peones: es el único peón de la cadena que no está defendido por otro peón propio.',
+  },
+  {
+    id: 'est_espacio', area: 'estrategia', peso: 1, tipo: 'opcion',
+    enunciado: '¿Qué significa tener "ventaja de espacio" en una posición?',
+    opciones: [
+      'Controlar más casillas del tablero con peones y piezas, dejando al rival con menos margen de maniobra',
+      'Tener más piezas que el rival',
+      'Haber jugado más rápido que el rival',
+      'Tener el rey más cerca del centro',
+    ], correcta: 0,
+    explica: 'Más espacio significa más casillas controladas y más movilidad para las propias piezas; al rival, mientras tanto, le cuesta encontrar buenas casillas para las suyas.',
+  },
+  {
+    id: 'est_profilaxis', area: 'estrategia', peso: 3, tipo: 'opcion',
+    enunciado: '¿Qué es una jugada "profiláctica" en ajedrez?',
+    opciones: [
+      'Una jugada que previene de antemano el plan o la idea del rival, antes de ejecutar el propio',
+      'Una jugada que ataca directamente al rey rival',
+      'Un tipo de enroque especial',
+      'Una jugada obligatoria por las reglas',
+    ], correcta: 0,
+    explica: 'La profilaxis consiste en preguntarse "¿qué quiere hacer mi rival?" y jugar algo que se lo impida, incluso antes de continuar con el propio plan.',
+  },
+  {
+    id: 'est_plan_bando', area: 'estrategia', peso: 2, tipo: 'opcion',
+    enunciado: '¿Por qué se dice que hay que "jugar con un plan", en vez de mover pieza por pieza sin conexión?',
+    opciones: [
+      'Porque las características concretas de la posición (peones, piezas, espacio) sugieren una idea a seguir varias jugadas',
+      'Porque las reglas exigen anunciar un plan antes de jugar',
+      'Porque un plan garantiza ganar la partida',
+      'Porque sin plan es imposible mover legalmente',
+    ], correcta: 0,
+    explica: 'Un plan conecta varias jugadas hacia un objetivo común (atacar un flanco, cambiar cierta pieza, avanzar una mayoría de peones), en vez de jugadas sueltas sin relación entre sí.',
+  },
+  {
+    id: 'est_estructura_peones_determina', area: 'estrategia', peso: 2, tipo: 'opcion',
+    enunciado: 'La frase clásica "los peones son el alma del ajedrez" (Philidor) quiere decir que…',
+    opciones: [
+      'La estructura de peones suele determinar qué planes son posibles para cada bando',
+      'Los peones son las piezas más valiosas del tablero',
+      'Sin peones no se puede enrocar',
+      'Los peones deciden quién mueve primero',
+    ], correcta: 0,
+    explica: 'Como los peones casi no pueden retroceder, la estructura que forman marca de forma casi permanente qué planes tienen sentido para cada bando durante el resto de la partida.',
+  },
+  {
+    id: 'est_cambio_alfil_malo', area: 'estrategia', peso: 2, tipo: 'opcion',
+    enunciado: 'Si tienes un "alfil malo" (encerrado por tus propios peones), ¿qué decisión estratégica suele convenir?',
+    opciones: [
+      'Buscar la oportunidad de cambiarlo por una pieza rival, aliviando ese problema',
+      'Nunca cambiarlo bajo ninguna circunstancia',
+      'Sacrificarlo de inmediato sin necesidad',
+      'Convertirlo en el objetivo principal del ataque propio',
+    ], correcta: 0,
+    explica: 'Un alfil malo aporta poco mientras siga en el tablero; muchas veces la mejor decisión estratégica es cambiarlo por una pieza rival útil, en vez de arrastrar esa debilidad toda la partida.',
+  },
+  {
+    id: 'est_torre_septima_fila', area: 'estrategia', peso: 2, tipo: 'opcion',
+    enunciado: '¿Por qué una torre en la séptima fila (segunda para las negras) suele ser muy fuerte?',
+    opciones: [
+      'Porque ataca los peones rivales que quedaron sin avanzar y puede colaborar en encerrar al rey en la última fila',
+      'Porque ahí siempre está a salvo de cualquier ataque',
+      'Porque le da jaque mate automático al rey rival',
+      'Porque en esa fila la torre vale el doble',
+    ], correcta: 0,
+    explica: 'Desde la séptima fila, la torre ataca de un tirón varios peones que todavía no avanzaron y, muchas veces, colabora en encerrar al rey rival contra la última fila.',
+  },
+  {
+    id: 'est_peones_colgantes', area: 'estrategia', peso: 3, tipo: 'opcion',
+    enunciado: '¿Qué son los "peones colgantes" (hanging pawns)?',
+    opciones: [
+      'Un par de peones propios, uno junto al otro en columnas vecinas, sin ningún otro peón propio que los respalde',
+      'Peones que están a punto de ser coronados',
+      'Peones capturados al paso',
+      'Peones que pertenecen a un jugador que se quedó sin tiempo',
+    ], correcta: 0,
+    explica: 'Los peones colgantes pueden ser una fuerza (dan espacio y movilidad) o una debilidad (son objetivos fáciles de atacar) según qué tan bien controlen las casillas de delante y qué piezas queden en el tablero.',
+  },
+  {
+    id: 'est_iniciativa', area: 'estrategia', peso: 1, tipo: 'opcion',
+    enunciado: '¿Qué significa tener la "iniciativa" en una partida?',
+    opciones: [
+      'Poder hacer amenazas constantes que obligan al rival a responder y defenderse, en vez de ejecutar sus propios planes',
+      'Haber jugado la primera jugada de la partida',
+      'Tener más piezas que el rival',
+      'Haber enrocado antes que el rival',
+    ], correcta: 0,
+    explica: 'Quien tiene la iniciativa dicta el ritmo de la partida: el rival está ocupado defendiéndose de amenazas concretas y no puede dedicarse tranquilamente a sus propios planes.',
+  },
+  {
+    id: 'est_tiempo_desarrollo', area: 'estrategia', peso: 1, tipo: 'opcion',
+    enunciado: 'En términos de apertura y estrategia, ¿qué es un "tiempo" (tempo)?',
+    opciones: [
+      'Cada jugada que se usa para desarrollar una pieza o mejorar la posición; perderlo es jugar algo que no aporta nada nuevo',
+      'El tiempo total que dura la partida en el reloj',
+      'Un tipo de sacrificio',
+      'Sinónimo exacto de "jaque"',
+    ], correcta: 0,
+    explica: 'Cada jugada "cuesta" un tiempo; usarla bien (desarrollando, mejorando la posición) es aprovecharlo, mientras que repetir movimientos sin necesidad es "perder tiempos" que el rival aprovecha.',
+  },
+  {
+    id: 'est_ataque_minoria', area: 'estrategia', peso: 3, tipo: 'opcion',
+    enunciado: '¿En qué consiste el "ataque de minoría" (minority attack)?',
+    opciones: [
+      'En avanzar los pocos peones propios de un flanco (aunque sean menos que los del rival) para forzar una debilidad en su estructura',
+      'En atacar solo con piezas menores, nunca con piezas mayores',
+      'En sacrificar todos los peones de un flanco de una vez',
+      'En jugar siempre con menos piezas que el rival',
+    ], correcta: 0,
+    explica: 'Aunque tenga menos peones en ese flanco, el bando que ataca avanza los suyos buscando cambiarlos por los del rival y dejarle una debilidad permanente (un peón aislado o retrasado) en esa zona.',
+  },
+  {
+    id: 'est_complejo_casillas_debiles', area: 'estrategia', peso: 2, tipo: 'opcion',
+    enunciado: '¿A qué se le llama un "complejo de casillas débiles" (por ejemplo, alrededor del propio rey)?',
+    opciones: [
+      'A un grupo de casillas del mismo color que ya no se pueden defender bien, a menudo tras cambiar el alfil de ese color',
+      'A las casillas donde nunca puede haber piezas',
+      'A las casillas centrales del tablero',
+      'A las casillas donde un peón puede coronar',
+    ], correcta: 0,
+    explica: 'Si se cambia, por ejemplo, el alfil de casillas claras, las casillas claras cercanas al rey pueden quedar crónicamente débiles porque ya no hay una pieza propia que las controle bien.',
+  },
+  {
+    id: 'est_planificar_segun_material', area: 'estrategia', peso: 2, tipo: 'opcion',
+    enunciado: 'Si tienes la pareja de alfiles contra alfil y caballo rival, ¿qué tipo de posición suele convenirte buscar?',
+    opciones: [
+      'Una posición abierta, con diagonales largas libres para que los alfiles rindan al máximo',
+      'Una posición completamente cerrada, con todos los peones trabados',
+      'Cambiar tus propios alfiles lo antes posible',
+      'Evitar cualquier apertura de líneas',
+    ], correcta: 0,
+    explica: 'La pareja de alfiles rinde más en posiciones abiertas, con diagonales despejadas; por eso, si la tienes, suele convenir abrir el juego en vez de mantenerlo cerrado.',
+  },
+  {
+    id: 'est_reyes_enrocados_distinto_flanco', area: 'estrategia', peso: 3, tipo: 'opcion',
+    enunciado: 'Si las blancas enrocan corto y las negras enrocan largo (enroques en flancos distintos), ¿qué estrategia suele volverse muy fuerte para ambos bandos?',
+    opciones: [
+      'Avanzar los propios peones hacia el rey rival ("pawn storm"), ya que no debilitan la posición del propio rey en ese flanco',
+      'Evitar mover cualquier peón por el resto de la partida',
+      'Cambiar todas las piezas lo antes posible para llegar a un final tranquilo',
+      'Enrocar una segunda vez en el flanco contrario',
+    ], correcta: 0,
+    explica: 'Cuando los reyes están en flancos opuestos, avanzar los propios peones contra el rey rival no debilita al propio rey (que está en el otro lado); ambos bandos suelen correr una carrera de ataques.',
+  },
+  {
+    id: 'est_simplificacion_defensiva', area: 'estrategia', peso: 1, tipo: 'opcion',
+    enunciado: 'Si tu posición está bajo mucha presión (aunque el material siga igualado), ¿qué recurso estratégico suele aliviar la defensa?',
+    opciones: [
+      'Buscar cambiar piezas para simplificar y reducir el peligro de ataque',
+      'Evitar cualquier cambio de piezas a toda costa',
+      'Avanzar los peones frente al propio rey',
+      'Sacar la dama a atacar sola',
+    ], correcta: 0,
+    explica: 'Con menos piezas atacantes en el tablero, un ataque pierde fuerza; cambiar piezas (incluso sin ganar material) es un recurso defensivo clásico para aliviar la presión.',
+  },
+  {
+    id: 'est_evaluacion_posicion', area: 'estrategia', peso: 1, tipo: 'opcion',
+    enunciado: 'Al evaluar una posición en el medio juego, ¿qué factores conviene tener en cuenta además del material?',
+    opciones: [
+      'La seguridad del rey, la actividad de las piezas, la estructura de peones y el espacio disponible',
+      'Únicamente cuántas piezas quedan en el tablero',
+      'Solo el tiempo que queda en el reloj',
+      'Solo si ya se hizo el enroque o no',
+    ], correcta: 0,
+    explica: 'El material es solo un factor más: la seguridad del rey, qué tan activas están las piezas, la estructura de peones y el espacio disponible pueden compensar (o superar) una diferencia de material.',
+  },
 
-  // ===== CÁLCULO (7) =====
+  // ===== CÁLCULO (25) =====
   {
     id: 'cal_alfil_diagonal', area: 'calculo', peso: 1, tipo: 'opcion',
     enunciado: 'Un alfil se mueve siempre…',
@@ -545,5 +1753,455 @@ window.DIAGNOSTICO_ITEMS = [
       'Porque el jaque solo es obligatorio en los finales',
     ], correcta: 0,
     explica: 'Los jaques son la jugada más "forzada" posible: reducen mucho las respuestas legales del rival, lo que hace más fácil calcular con precisión esa rama del cálculo.',
+  },
+  {
+    id: 'cal_calculo_definicion', area: 'calculo', peso: 1, tipo: 'opcion',
+    enunciado: 'En ajedrez, ¿qué significa exactamente "calcular"?',
+    opciones: [
+      'Visualizar mentalmente jugadas futuras y sus consecuencias antes de mover una pieza',
+      'Contar cuántas piezas quedan en el tablero',
+      'Sumar el tiempo que queda en el reloj',
+      'Memorizar aperturas de memoria',
+    ], correcta: 0,
+    explica: 'Calcular es "ver" en la cabeza una secuencia de jugadas (propias y del rival) y sus consecuencias, sin necesidad de mover las piezas en el tablero para comprobarlo.',
+  },
+  {
+    id: 'cal_arbol_variantes', area: 'calculo', peso: 2, tipo: 'opcion',
+    enunciado: '¿Qué es un "árbol de variantes" al calcular una posición?',
+    opciones: [
+      'El conjunto de líneas posibles que se ramifican según las distintas respuestas del rival en cada jugada',
+      'Un diagrama que se dibuja físicamente antes de cada partida',
+      'Una apertura con muchas variantes teóricas',
+      'El registro escrito de una partida ya jugada',
+    ], correcta: 0,
+    explica: 'Cada jugada candidata abre varias ramas según cómo responda el rival; ese conjunto de líneas posibles, unas dentro de otras, es lo que se llama el árbol de variantes.',
+  },
+  {
+    id: 'cal_jugada_candidata', area: 'calculo', peso: 1, tipo: 'opcion',
+    enunciado: '¿Qué son las "jugadas candidatas" al calcular una posición?',
+    opciones: [
+      'Una lista corta de las jugadas más prometedoras, elegidas antes de calcular cada una a fondo',
+      'Todas las jugadas legales posibles en la posición, sin excepción',
+      'Solo las jugadas que dan jaque',
+      'Las jugadas que ya jugó el rival en partidas anteriores',
+    ], correcta: 0,
+    explica: 'En vez de calcular cada jugada legal (imposible en la práctica), primero se eligen unas pocas jugadas candidatas prometedoras y solo esas se calculan a fondo.',
+  },
+  {
+    id: 'cal_profundidad_calculo', area: 'calculo', peso: 2, tipo: 'opcion',
+    enunciado: 'Sobre "cuántas jugadas hay que calcular por delante", ¿qué es más importante que ver muy lejos?',
+    opciones: [
+      'Calcular con precisión hasta el punto necesario, aunque sean pocas jugadas, en vez de calcular muchas de forma descuidada',
+      'Siempre calcular al menos diez jugadas exactas',
+      'Nunca calcular más de una jugada',
+      'El número de jugadas calculadas no importa en absoluto',
+    ], correcta: 0,
+    explica: 'Una línea corta pero calculada con precisión vale más que una línea larga llena de errores; lo importante es calcular hasta donde la posición realmente lo exige, y hacerlo bien.',
+  },
+  {
+    id: 'cal_visualizacion_sin_mover', area: 'calculo', peso: 2, tipo: 'opcion',
+    enunciado: '¿Para qué sirve practicar cálculo "a ciegas" (visualizando la posición sin mover las piezas)?',
+    opciones: [
+      'Para entrenar la capacidad de ver mentalmente cómo queda el tablero tras una secuencia de jugadas',
+      'Para jugar torneos sin tablero físico obligatoriamente',
+      'Para memorizar aperturas más rápido',
+      'Para evitar aprender las reglas del enroque',
+    ], correcta: 0,
+    explica: 'Visualizar sin mover fuerza a construir una imagen mental clara de la posición futura, una habilidad clave para calcular bien en partidas reales.',
+  },
+  {
+    id: 'cal_amenazas_propias_rival', area: 'calculo', peso: 1, tipo: 'opcion',
+    enunciado: 'Antes de decidir una jugada, ¿qué conviene revisar además de las propias ideas?',
+    opciones: [
+      'Qué amenaza el rival con su última jugada, o qué amenazaría si le tocara mover otra vez',
+      'Solo cuántas piezas propias quedan en el tablero',
+      'El resultado de la última partida jugada',
+      'El color de la casilla donde está el rey propio',
+    ], correcta: 0,
+    explica: 'Ignorar las amenazas del rival es un error común: antes de ejecutar el propio plan, hay que confirmar que la jugada del rival no crea un peligro que haya que atender primero.',
+  },
+  {
+    id: 'cal_recapturas_forzadas', area: 'calculo', peso: 2, tipo: 'opcion',
+    enunciado: 'Después de una captura, ¿qué conviene comprobar antes de asumir cuál es "la" recaptura obvia?',
+    opciones: [
+      'Todas las piezas que realmente pueden recapturar en esa casilla, no solo la primera que parece evidente',
+      'Solo si el rey sigue en jaque',
+      'Si ya se hizo el enroque',
+      'El valor total de las piezas que quedan en el tablero',
+    ], correcta: 0,
+    explica: 'A veces hay más de una pieza capaz de recapturar, y elegir la incorrecta puede cambiar por completo el resultado de la combinación: conviene revisar todas las opciones antes de decidir.',
+  },
+  {
+    id: 'cal_verificar_jugada_legal', area: 'calculo', peso: 1, tipo: 'opcion',
+    enunciado: 'Después de calcular una combinación prometedora, ¿qué último paso no hay que saltarse antes de jugarla?',
+    opciones: [
+      'Confirmar que cada jugada de la secuencia es realmente legal en esa posición (por ejemplo, que ninguna pieza está clavada)',
+      'Anunciarla en voz alta',
+      'Ofrecer tablas al rival',
+      'Anotarla en la planilla antes de jugarla',
+    ], correcta: 0,
+    explica: 'Es fácil calcular una combinación asumiendo que una pieza puede moverse, sin notar que está clavada o que esa jugada dejaría al propio rey en jaque: siempre hay que confirmar la legalidad antes de confiar en el cálculo.',
+  },
+  {
+    id: 'cal_error_espejismo', area: 'calculo', peso: 3, tipo: 'opcion',
+    enunciado: '¿Qué es un "espejismo táctico" al calcular una combinación?',
+    opciones: [
+      'Una secuencia que parece ganadora a primera vista, pero que una jugada más de cálculo revela que el rival tiene una defensa que la refuta',
+      'Una jugada que es ilegal pero parece legal',
+      'Un patrón de mate que nunca funciona',
+      'Un tipo de sacrificio que siempre es correcto',
+    ], correcta: 0,
+    explica: 'Muchas combinaciones que "se ven" ganadoras fallan por un detalle que solo aparece un movimiento más adelante; por eso hay que calcular hasta el final antes de confiar en una idea, por bonita que parezca.',
+  },
+  {
+    id: 'cal_calculo_forzado_vs_libre', area: 'calculo', peso: 2, tipo: 'opcion',
+    enunciado: '¿Por qué las líneas "forzadas" (con pocas respuestas razonables del rival) son más fáciles de calcular que las "libres"?',
+    opciones: [
+      'Porque hay menos ramas que revisar en el árbol de variantes, así que se puede calcular con más profundidad y seguridad',
+      'Porque las líneas forzadas siempre terminan en jaque mate',
+      'Porque en las líneas forzadas no hace falta pensar en absoluto',
+      'Porque las líneas libres son siempre ilegales',
+    ], correcta: 0,
+    explica: 'Con pocas respuestas razonables para el rival, el árbol de variantes es mucho más pequeño y manejable, lo que permite calcular con mayor profundidad y confianza.',
+  },
+  {
+    id: 'cal_util_diagrama_mental', area: 'calculo', peso: 2, tipo: 'opcion',
+    enunciado: 'Al terminar de calcular una secuencia larga, ¿qué es tan importante como ver las jugadas en sí?',
+    opciones: [
+      'Poder "ver" con claridad cómo queda la posición final, para evaluar si de verdad conviene',
+      'Anotar cada jugada en la planilla antes de jugarla',
+      'Contar cuántos minutos se usaron en pensarla',
+      'Preguntarle al árbitro si la secuencia es correcta',
+    ], correcta: 0,
+    explica: 'De nada sirve calcular bien la secuencia de jugadas si al final no se evalúa correctamente cómo queda la posición resultante: calcular y evaluar van de la mano.',
+  },
+  {
+    id: 'cal_amenaza_mate_prioridad', area: 'calculo', peso: 1, tipo: 'opcion',
+    enunciado: 'Si el rival amenaza dar jaque mate en su siguiente jugada, ¿qué prioridad tiene atender esa amenaza?',
+    opciones: [
+      'Máxima: casi siempre hay que ocuparse de ella antes que de cualquier otro plan propio, aunque cueste material',
+      'Ninguna: se puede ignorar si se está ganando material en otro lado',
+      'Solo si el rival ya tiene la dama en el tablero',
+      'Solo en los finales, nunca en la apertura',
+    ], correcta: 0,
+    explica: 'Una amenaza de mate anula cualquier otro plan: si no se atiende (bloqueando, capturando la pieza atacante o moviendo el rey), la partida termina sin importar cuánto material se haya ganado por otro lado.',
+  },
+  {
+    id: 'cal_conteo_capturas_multiples', area: 'calculo', peso: 3, tipo: 'opcion',
+    enunciado: 'Al calcular una serie de varias capturas seguidas en una misma casilla (con varios atacantes y defensores de cada bando), ¿qué hay que hacer para saber el resultado final?',
+    opciones: [
+      'Simular mentalmente el intercambio completo, capturando en el orden correcto de valor, hasta que a ninguno de los dos bandos le convenga seguir',
+      'Detenerse después de la primera captura, sin calcular más',
+      'Sumar el valor de todas las piezas involucradas y compararlo con el valor del rey',
+      'Asumir que siempre gana quien capturó primero',
+    ], correcta: 0,
+    explica: 'Hay que simular el intercambio completo (capturando de menor a mayor valor) y detenerse en el punto donde seguir capturando ya no convenga, para saber realmente cuánto material queda ganado o perdido.',
+  },
+  {
+    id: 'cal_calculo_bajo_presion_tiempo', area: 'calculo', peso: 1, tipo: 'opcion',
+    enunciado: 'Con poco tiempo en el reloj, ¿qué conviene priorizar al calcular?',
+    opciones: [
+      'Las líneas forzadas y seguras, en vez de combinaciones especulativas difíciles de verificar a fondo',
+      'Calcular la partida completa hasta el final',
+      'Ignorar por completo el cálculo y jugar al azar',
+      'Ofrecer tablas de inmediato',
+    ], correcta: 0,
+    explica: 'Con poco tiempo, calcular una combinación especulativa y larga es arriesgado; suele ser más seguro elegir líneas forzadas y claras que se puedan verificar rápido.',
+  },
+  {
+    id: 'cal_relacion_calculo_tactica', area: 'calculo', peso: 1, tipo: 'opcion',
+    enunciado: '¿Cuál es la diferencia entre "ver" una idea táctica y "calcularla"?',
+    opciones: [
+      'Ver la idea es notar que algo podría funcionar; calcularla es comprobar, jugada por jugada, que de verdad funciona',
+      'Son exactamente lo mismo, sin ninguna diferencia',
+      'Calcular es más lento pero siempre menos preciso que solo "verla"',
+      'Ver una idea táctica es imposible sin calcular primero',
+    ], correcta: 0,
+    explica: 'Reconocer un patrón táctico es solo el primer paso; el cálculo confirma (o descarta) que esa idea realmente funciona en la posición concreta, jugada por jugada.',
+  },
+  {
+    id: 'cal_error_comun_calculo', area: 'calculo', peso: 2, tipo: 'opcion',
+    enunciado: '¿Cuál es un error común al calcular una combinación?',
+    opciones: [
+      'Detener el cálculo demasiado pronto, sin comprobar la mejor defensa posible del rival',
+      'Calcular demasiadas jugadas de más',
+      'Empezar a calcular por las jugadas más débiles',
+      'Anotar la jugada antes de calcularla',
+    ], correcta: 0,
+    explica: 'Es fácil calcular solo hasta la respuesta que uno espera del rival y detenerse ahí; muchas combinaciones fallan porque no se consideró la defensa más resistente que el rival realmente tenía.',
+  },
+  {
+    id: 'cal_calculo_finales_precision', area: 'calculo', peso: 3, tipo: 'opcion',
+    enunciado: '¿Por qué el cálculo en los finales suele necesitar más precisión exacta que en el medio juego?',
+    opciones: [
+      'Porque con pocas piezas, un solo tiempo de más o de menos puede cambiar el resultado entre ganar, tablas o perder',
+      'Porque en los finales las piezas se mueven de forma distinta',
+      'Porque en los finales no hace falta calcular en absoluto',
+      'Porque el reloj corre más rápido en los finales',
+    ], correcta: 0,
+    explica: 'Con menos piezas y menos margen de error, un cálculo impreciso en el final puede convertir una victoria clara en tablas, o incluso en derrota.',
+  },
+  {
+    id: 'cal_practica_calculo', area: 'calculo', peso: 1, tipo: 'opcion',
+    enunciado: '¿Cuál es una de las formas más efectivas de entrenar la capacidad de cálculo?',
+    opciones: [
+      'Resolver ejercicios y puzles tácticos con regularidad',
+      'Memorizar únicamente aperturas',
+      'Jugar solo partidas muy rápidas, sin pensar',
+      'Evitar analizar las propias partidas después de jugarlas',
+    ], correcta: 0,
+    explica: 'Resolver puzles tácticos de forma constante entrena tanto el reconocimiento de patrones como la disciplina de calcular una línea hasta confirmarla, antes de mover la pieza.',
+  },
+
+  // ===== MAESTRÍA (25) — tema adicional, un poco más difícil que los demás =====
+  {
+    id: 'mae_zugzwang_reciproco', area: 'maestria', peso: 3, tipo: 'opcion',
+    enunciado: '¿Qué es un "zugzwang recíproco" (o mutuo)?',
+    opciones: [
+      'Una posición en la que, sin importar a quién le toque mover, ese bando queda peor: el turno de mover siempre perjudica',
+      'Un zugzwang que solo afecta a las blancas',
+      'Una posición donde nadie puede quedar en zugzwang',
+      'Un tipo de tablas automáticas',
+    ], correcta: 0,
+    explica: 'En un zugzwang recíproco, la posición está tan ajustada que da igual de qué lado sea el turno: quien tenga que mover, empeora su posición. Es un tema avanzado de estudios de finales.',
+  },
+  {
+    id: 'mae_fortaleza', area: 'maestria', peso: 3, tipo: 'opcion',
+    enunciado: 'En finales con mucha diferencia de material, ¿qué es una "fortaleza" (fortress)?',
+    opciones: [
+      'Una disposición defensiva que logra tablas porque el bando con más material no puede romperla, por mucho material que tenga de más',
+      'Una apertura especialmente sólida',
+      'Un patrón de mate con torre y alfil',
+      'Una regla que impide el sacrificio de dama',
+    ], correcta: 0,
+    explica: 'Una fortaleza es una estructura defensiva tan cerrada que el bando atacante, aunque tenga mucho más material, no encuentra ninguna forma de progresar: el resultado son tablas a pesar de la diferencia de material.',
+  },
+  {
+    id: 'mae_elo_definicion', area: 'maestria', peso: 1, tipo: 'opcion',
+    enunciado: '¿Qué mide, en términos generales, el sistema de puntuación Elo?',
+    opciones: [
+      'La fuerza de juego estimada de un jugador, calculada a partir de sus resultados contra rivales también puntuados',
+      'La cantidad de partidas que ha jugado un jugador en su vida',
+      'El tiempo total que un jugador ha dedicado al ajedrez',
+      'La edad mínima para competir en torneos oficiales',
+    ], correcta: 0,
+    explica: 'El Elo es un número que estima la fuerza de juego de una persona a partir de sus resultados frente a rivales con Elo conocido: ganar a alguien de Elo más alto sube más puntos que ganarle a alguien más débil.',
+  },
+  {
+    id: 'mae_elo_diferencia', area: 'maestria', peso: 2, tipo: 'opcion',
+    enunciado: 'Como referencia aproximada del sistema Elo, si un jugador tiene unos 200 puntos más que su rival, ¿qué porcentaje de los puntos en juego suele sacarle en el largo plazo?',
+    opciones: ['Alrededor de un 75%', 'Exactamente el 100%, siempre gana', 'Alrededor de un 50%, es indiferente', 'Menos del 25%'], correcta: 0,
+    explica: 'La fórmula del Elo predice que, con 200 puntos de diferencia, el jugador más fuerte debería sacar aproximadamente un 75% de los puntos posibles a largo plazo, aunque cualquier partida individual puede tener cualquier resultado.',
+  },
+  {
+    id: 'mae_fide_titulos', area: 'maestria', peso: 1, tipo: 'opcion',
+    enunciado: 'Entre los títulos oficiales de la FIDE, ¿cuál es el de mayor jerarquía?',
+    opciones: ['Gran Maestro (GM)', 'Maestro Internacional (IM)', 'Maestro FIDE (FM)', 'Candidato a Maestro (CM)'], correcta: 0,
+    explica: 'El orden de mayor a menor jerarquía en los títulos abiertos de la FIDE es: Gran Maestro (GM), Maestro Internacional (IM), Maestro FIDE (FM) y Candidato a Maestro (CM).',
+  },
+  {
+    id: 'mae_reloj_incremento', area: 'maestria', peso: 1, tipo: 'opcion',
+    enunciado: 'En un reloj de ajedrez con "incremento" (por ejemplo, 90 minutos + 30 segundos), ¿qué significa ese segundo número?',
+    opciones: [
+      'Que se suman esos segundos al tiempo del jugador después de cada jugada que hace',
+      'Que el reloj total del jugador aumenta esa cantidad solo una vez, al inicio',
+      'Que el rival pierde ese tiempo en cada jugada',
+      'Que la partida dura como máximo esos segundos extra en total',
+    ], correcta: 0,
+    explica: 'El incremento (o "delay", según el sistema) añade esa cantidad de tiempo al reloj de un jugador cada vez que completa una jugada, evitando que se quede sin tiempo por partidas largas.',
+  },
+  {
+    id: 'mae_notacion_pgn', area: 'maestria', peso: 2, tipo: 'opcion',
+    enunciado: '¿Qué es el formato PGN, usado para guardar partidas de ajedrez?',
+    opciones: [
+      'Un formato de texto estándar para registrar las jugadas (y datos) de una partida, legible por casi cualquier programa de ajedrez',
+      'Un tipo de reloj digital',
+      'El nombre de un motor de ajedrez',
+      'Un formato exclusivo para imágenes de tableros',
+    ], correcta: 0,
+    explica: 'PGN (Portable Game Notation) es un formato de texto estándar que guarda las jugadas de una partida junto con datos como jugadores, fecha y resultado, y que abren la mayoría de los programas de ajedrez.',
+  },
+  {
+    id: 'mae_swiss_system', area: 'maestria', peso: 2, tipo: 'opcion',
+    enunciado: '¿Cómo funciona el "sistema suizo" en un torneo?',
+    opciones: [
+      'En cada ronda se empareja a jugadores con puntuación similar, sin eliminación, durante un número fijo de rondas',
+      'Los jugadores eliminados no pueden seguir jugando ninguna otra ronda',
+      'Todos los jugadores enfrentan a todos los demás, una sola vez',
+      'Se juega a una sola partida eliminatoria por ronda',
+    ], correcta: 0,
+    explica: 'El sistema suizo empareja en cada ronda a jugadores con puntuaciones parecidas (sin eliminar a nadie) durante un número de rondas ya fijado de antemano, algo muy usado cuando hay muchos participantes.',
+  },
+  {
+    id: 'mae_round_robin', area: 'maestria', peso: 1, tipo: 'opcion',
+    enunciado: '¿Cómo se le llama al formato de torneo en el que cada jugador se enfrenta a todos los demás participantes (una o dos veces)?',
+    opciones: ['Todos contra todos (round robin)', 'Sistema suizo', 'Eliminación directa', 'Sistema Scheveningen'], correcta: 0,
+    explica: 'En el formato "todos contra todos", cada participante juega contra cada uno de los demás una vez (o dos, ida y vuelta), a diferencia del sistema suizo, que no empareja a todos entre sí.',
+  },
+  {
+    id: 'mae_desempate_criterios', area: 'maestria', peso: 2, tipo: 'opcion',
+    enunciado: 'En un torneo de sistema suizo, si dos jugadores empatan en puntos al final, ¿qué se suele usar para desempatarlos en la clasificación?',
+    opciones: [
+      'Criterios de desempate como el Buchholz (la suma de puntos de los rivales que enfrentaron)',
+      'Siempre se juega una partida de desempate obligatoria',
+      'El jugador de mayor edad queda primero automáticamente',
+      'Se reparte el primer lugar sin ningún criterio adicional',
+    ], correcta: 0,
+    explica: 'Sistemas como el Buchholz (sumar los puntos totales de los rivales enfrentados) son criterios de desempate habituales cuando dos o más jugadores terminan con el mismo puntaje.',
+  },
+  {
+    id: 'mae_motor_evaluacion', area: 'maestria', peso: 2, tipo: 'opcion',
+    enunciado: 'Cuando un motor de ajedrez muestra una evaluación de "+1.5" para las blancas, ¿qué quiere decir aproximadamente?',
+    opciones: [
+      'Que, según el motor, las blancas tienen una ventaja equivalente a un poco más de un peón',
+      'Que las blancas están a 1.5 jugadas de dar jaque mate',
+      'Que la partida durará 1.5 horas más',
+      'Que hay 1.5 piezas atacadas en el tablero',
+    ], correcta: 0,
+    explica: 'Los motores expresan su evaluación en "unidades de peón": +1.5 significa que, según su cálculo, las blancas tienen una ventaja aproximada de un peón y medio, sin que eso garantice ganar la partida.',
+  },
+  {
+    id: 'mae_libro_aperturas_motor', area: 'maestria', peso: 2, tipo: 'opcion',
+    enunciado: '¿Qué es el "libro de aperturas" que usan los motores de ajedrez y las bases de datos?',
+    opciones: [
+      'Una colección de jugadas de apertura ya conocidas y estudiadas, que el motor usa antes de empezar a calcular desde cero',
+      'Un libro físico obligatorio en los torneos',
+      'Una lista de jugadas prohibidas por las reglas',
+      'El manual de instrucciones del programa',
+    ], correcta: 0,
+    explica: 'El libro de aperturas contiene líneas ya analizadas y jugadas muchas veces; usarlo le ahorra al motor (o al jugador) tener que calcular desde cero las primeras jugadas, ya conocidas por la teoría.',
+  },
+  {
+    id: 'mae_gambito_evans', area: 'maestria', peso: 3, tipo: 'opcion',
+    enunciado: '1.e4 e5 2.Cf3 Cc6 3.Ac4 Ac5 4.b4 es el…',
+    opciones: ['Gambito Evans', 'Gambito de Rey', 'Gambito de Dama', 'Gambito Letón'], correcta: 0,
+    explica: 'El Gambito Evans ofrece un peón de flanco de dama (b4) para ganar tiempo atacando al alfil negro y acelerar el desarrollo blanco dentro de la Apertura Italiana.',
+  },
+  {
+    id: 'mae_defensa_berlinesa', area: 'maestria', peso: 3, tipo: 'opcion',
+    enunciado: '1.e4 e5 2.Cf3 Cc6 3.Ab5 Cf6, dentro de la Apertura Española, corresponde a la Defensa…',
+    opciones: ['Berlinesa', 'Marshall', 'Arkhangelsk', 'Schliemann'], correcta: 0,
+    explica: 'La Defensa Berlinesa (3...Cf6) es célebre por su solidez extrema; se hizo muy popular en el ajedrez de élite como forma segura de neutralizar 1.e4 con las negras.',
+  },
+  {
+    id: 'mae_partida_inmortal', area: 'maestria', peso: 2, tipo: 'opcion',
+    enunciado: '¿Por qué se conoce como "la Partida Inmortal" (Anderssen contra Kieseritzky, 1851)?',
+    opciones: [
+      'Porque Anderssen ganó sacrificando casi todas sus piezas mayores a cambio de un ataque decisivo',
+      'Porque duró más de 200 jugadas',
+      'Porque terminó en tablas por triple repetición',
+      'Porque fue la primera partida jugada con reloj',
+    ], correcta: 0,
+    explica: 'En la Partida Inmortal, Adolf Anderssen sacrificó ambas torres, un alfil y la dama, y aun así logró dar mate, en una de las combinaciones más admiradas de la historia del ajedrez.',
+  },
+  {
+    id: 'mae_partida_siglo', area: 'maestria', peso: 2, tipo: 'opcion',
+    enunciado: '¿Por qué se conoce como "la Partida del Siglo" a Donald Byrne contra Bobby Fischer (1956)?',
+    opciones: [
+      'Porque un Fischer de solo 13 años sacrificó su dama para lograr una combinación ganadora',
+      'Porque fue la partida más larga jamás registrada',
+      'Porque terminó en tablas por ahogado',
+      'Porque se jugó sin reloj de ajedrez',
+    ], correcta: 0,
+    explica: 'Con apenas 13 años, Bobby Fischer sorprendió al mundo del ajedrez con un sacrificio de dama que llevó a una combinación ganadora contra un maestro adulto mucho más experimentado.',
+  },
+  {
+    id: 'mae_capablanca_estilo', area: 'maestria', peso: 2, tipo: 'opcion',
+    enunciado: 'El excampeón mundial cubano José Raúl Capablanca es especialmente recordado por…',
+    opciones: [
+      'Su técnica extremadamente clara y precisa en los finales',
+      'Ser el primer jugador en usar relojes de ajedrez',
+      'Inventar el enroque largo',
+      'No haber perdido nunca ni una sola partida en toda su carrera',
+    ], correcta: 0,
+    explica: 'Capablanca es célebre por la sencillez y precisión de su juego, en especial en los finales, donde su técnica se sigue estudiando como modelo de claridad.',
+  },
+  {
+    id: 'mae_kasparov_deep_blue', area: 'maestria', peso: 1, tipo: 'opcion',
+    enunciado: '¿Qué ocurrió en el famoso enfrentamiento entre Garry Kaspárov y la computadora Deep Blue en 1997?',
+    opciones: [
+      'Deep Blue ganó el match, un hito histórico para el ajedrez por computadora',
+      'Kaspárov ganó todas las partidas sin perder ninguna',
+      'El match terminó suspendido sin resultado',
+      'Fue la primera vez que se usó un reloj digital',
+    ], correcta: 0,
+    explica: 'En 1997, la supercomputadora Deep Blue de IBM venció al entonces campeón mundial Garry Kaspárov en un match a seis partidas, un momento histórico para el ajedrez y la inteligencia artificial.',
+  },
+  {
+    id: 'mae_fischer_random', area: 'maestria', peso: 2, tipo: 'opcion',
+    enunciado: '¿En qué consiste el "Ajedrez960" (Fischer Random Chess), inventado por Bobby Fischer?',
+    opciones: [
+      'La fila de piezas iniciales se sortea al azar (con ciertas reglas), reduciendo el peso de la teoría de aperturas memorizada',
+      'Se juega con 960 peones adicionales',
+      'El tablero tiene 960 casillas en vez de 64',
+      'Cada jugador tiene solo 9 minutos con 60 segundos de incremento',
+    ], correcta: 0,
+    explica: 'En Ajedrez960, la posición inicial de las piezas (no de los peones) se sortea entre 960 configuraciones posibles válidas, lo que obliga a pensar desde la primera jugada en vez de recitar teoría memorizada.',
+  },
+  {
+    id: 'mae_teoria_juegos_valor', area: 'maestria', peso: 3, tipo: 'opcion',
+    enunciado: 'Desde el punto de vista de la teoría de juegos, ¿qué se sabe sobre el resultado "ideal" del ajedrez jugado a la perfección por ambos bandos?',
+    opciones: [
+      'En teoría tiene un resultado fijo (blancas ganan, negras ganan, o tablas), aunque en la práctica todavía no se sabe cuál es, por su enorme complejidad',
+      'Siempre ganan las blancas, ya está demostrado matemáticamente',
+      'Siempre terminan en tablas, ya está demostrado matemáticamente',
+      'No existe ningún resultado teórico posible, depende del azar',
+    ], correcta: 0,
+    explica: 'El ajedrez es un juego finito, determinista y de información perfecta, así que en teoría tiene un resultado fijo con juego perfecto de ambos bandos; sin embargo, por la enorme cantidad de posiciones posibles, ese resultado exacto sigue sin conocerse.',
+  },
+  {
+    id: 'mae_valor_pieza_contexto', area: 'maestria', peso: 3, tipo: 'opcion',
+    enunciado: 'Los valores de referencia de las piezas (peón 1, caballo/alfil 3, torre 5, dama 9) son útiles, pero ¿qué hay que recordar sobre ellos en niveles avanzados?',
+    opciones: [
+      'Son solo una guía general: la posición concreta puede hacer que una pieza "menos valiosa" sobre el papel rinda más que otra en esa partida',
+      'Son números exactos que nunca cambian según la posición',
+      'Solo aplican en el medio juego, nunca en los finales',
+      'El valor de una pieza depende únicamente de su color',
+    ], correcta: 0,
+    explica: 'En una posición concreta, un caballo bien situado en un puesto avanzado puede rendir más que un alfil "mejor" sobre el papel: los valores de referencia son un punto de partida, no una verdad absoluta en cada posición.',
+  },
+  {
+    id: 'mae_endgame_tablebase', area: 'maestria', peso: 2, tipo: 'opcion',
+    enunciado: '¿Qué son las "tablas de finales" (endgame tablebases) generadas por computadora?',
+    opciones: [
+      'Bases de datos que contienen el resultado exacto (y la mejor jugada) para cada posición posible con muy pocas piezas en el tablero',
+      'Un tipo de reloj especial para finales',
+      'Un límite de jugadas después del cual la partida es tablas obligatorias',
+      'Un manual impreso de finales clásicos',
+    ], correcta: 0,
+    explica: 'Las tablas de finales calculan, para posiciones con pocas piezas (hoy en día hasta 7), el resultado exacto con juego perfecto y la mejor jugada posible en cada una, resolviendo esos finales por completo.',
+  },
+  {
+    id: 'mae_prep_precisa_alto_nivel', area: 'maestria', peso: 3, tipo: 'opcion',
+    enunciado: 'En el ajedrez de élite actual, ¿qué papel cumplen los motores de ajedrez en la preparación de aperturas de los jugadores profesionales?',
+    opciones: [
+      'Ayudan a analizar líneas muy profundas de antemano, a veces 20 o más jugadas, antes de llegar a la partida',
+      'Están prohibidos en cualquier fase de la preparación',
+      'Solo se usan durante la partida, nunca antes',
+      'No tienen ninguna influencia en cómo se preparan los jugadores',
+    ], correcta: 0,
+    explica: 'Hoy en día, buena parte de la preparación de apertura de los jugadores profesionales se hace con la ayuda de motores muy fuertes, que permiten analizar líneas concretas con muchísima profundidad antes de sentarse a jugar.',
+  },
+  {
+    id: 'mae_jugada_ilegal_sancion', area: 'maestria', peso: 2, tipo: 'opcion',
+    enunciado: 'Según las reglas actuales de la FIDE, si un jugador hace una jugada ilegal por primera vez en una partida con árbitro, ¿qué suele pasar?',
+    opciones: [
+      'Se corrige la posición y, como sanción, se le añade tiempo extra en el reloj al rival',
+      'El jugador pierde la partida de inmediato, sin excepción',
+      'No pasa absolutamente nada, la jugada se deja como válida',
+      'Se reinicia la partida desde el principio',
+    ], correcta: 0,
+    explica: 'Las reglas actuales suelen sancionar una primera jugada ilegal corrigiendo la posición y dando tiempo extra al rival, en vez de una derrota automática (que sí puede aplicar en infracciones repetidas, según la modalidad).',
+  },
+  {
+    id: 'mae_finales_precision_maestros', area: 'maestria', peso: 3, tipo: 'opcion',
+    enunciado: '¿Por qué incluso los grandes maestros a veces cometen errores en finales de torre aparentemente sencillos?',
+    opciones: [
+      'Porque muchos finales de torre exigen una precisión técnica extrema, donde un solo tiempo de diferencia cambia el resultado',
+      'Porque las reglas del final de torres son distintas a las del resto de la partida',
+      'Porque los finales de torre no se estudian en el ajedrez profesional',
+      'Porque el reloj se detiene automáticamente en los finales de torre',
+    ], correcta: 0,
+    explica: 'Los finales de torre están entre los más comunes y, a la vez, entre los más difíciles de jugar con precisión absoluta: incluso jugadores de altísimo nivel se equivocan en posiciones que parecen sencillas a simple vista.',
   },
 ];
