@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnósticos de visitantes — AjedrezIntegral</title>
+    <meta name="description" content="Panel para profesores: resultados del Diagnóstico de nivel hecho por visitantes sin cuenta.">
+    <meta name="robots" content="noindex">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { 'sans': ['Inter', 'sans-serif'], 'display': ['Playfair Display', 'serif'] },
+                    colors: {
+                        'chess-dark': '#0a1628', 'chess-navy': '#102a4c', 'chess-blue': '#1e4d8b',
+                        'chess-royal': '#2563eb', 'chess-sky': '#3b82f6', 'chess-light': '#e0ecf8', 'chess-gold': '#f4c430',
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="js/supabase-client.js"></script>
+</head>
+<body class="font-sans bg-chess-dark text-white antialiased min-h-screen">
+
+    <div id="app" class="hidden">
+        <header class="bg-chess-navy/90 backdrop-blur-md border-b border-white/10 sticky top-0 z-40">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+                <a href="index.html" class="flex items-center gap-2 shrink-0">
+                    <div class="w-9 h-9 bg-gradient-to-br from-chess-royal to-chess-navy rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-chess-gold" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C10.8954 2 10 2.89543 10 4C10 4.74028 10.4022 5.38663 11 5.73242V8H7V11H8.6178L7.5 13.5L5.5 12L4 14L5.5 16L7.5 14.5L9 16.5L7 19L9 21L12 18L15 21L17 19L15 16.5L16.5 14.5L18.5 16L20 14L18.5 12L16.5 13.5L15.4 11H17V8H13V5.73242C13.5978 5.38663 14 4.74028 14 4C14 2.89543 13.1046 2 12 2Z"/>
+                        </svg>
+                    </div>
+                    <span class="font-display text-base font-bold hidden sm:inline">Ajedrez<span class="text-chess-sky">Integral</span></span>
+                </a>
+                <h1 class="font-display text-base md:text-xl font-bold">📋 Diagnósticos de visitantes</h1>
+                <a href="clases.html" class="btn-secondary !py-2 !px-4 !text-xs">← Academia</a>
+            </div>
+        </header>
+
+        <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
+            <div class="feature-card !p-5">
+                <p class="feature-text !mb-0">
+                    Resultados del <a href="diagnostico.html" target="_blank" class="text-chess-sky hover:underline">Diagnóstico de nivel</a>
+                    hecho por personas sin cuenta. Marca "Atendido" cuando ya le escribiste a alguien, para separarlo de lo pendiente.
+                </p>
+            </div>
+
+            <div class="flex items-center justify-between flex-wrap gap-3">
+                <p id="resumen" class="text-sm text-white/60"></p>
+                <div class="flex gap-2">
+                    <button id="filtro-pendientes" class="btn-outline !text-xs !py-1.5 !px-3">Solo pendientes</button>
+                    <button id="filtro-todos" class="btn-secondary !text-xs !py-1.5 !px-3">Todos</button>
+                </div>
+            </div>
+
+            <div id="lista" class="space-y-4"></div>
+            <p id="vacio-msg" class="hidden text-sm text-white/50 text-center py-10">No hay diagnósticos que mostrar todavía.</p>
+        </main>
+    </div>
+
+    <div id="loading" class="min-h-screen flex items-center justify-center text-white/50">Cargando…</div>
+
+    <div id="error-state" class="hidden min-h-screen flex flex-col items-center justify-center text-center px-4 gap-3">
+        <p class="text-4xl">🚫</p>
+        <p id="error-text" class="text-white/60"></p>
+        <a href="clases.html" class="btn-secondary !text-sm">← Volver a Clases</a>
+    </div>
+
+    <script>
+        const AREAS = {
+            reglas: 'Reglas', material: 'Material', apertura: 'Aperturas', tactica: 'Táctica',
+            mate: 'Mates', finales: 'Finales', estrategia: 'Estrategia', calculo: 'Cálculo',
+        };
+
+        let session = null;
+        let diagnosticos = [];
+        let soloPendientes = true;
+
+        function showError(text) {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('error-text').textContent = text;
+            document.getElementById('error-state').classList.remove('hidden');
+        }
+
+        function formatearFecha(iso) {
+            try {
+                return new Date(iso).toLocaleString('es-CR', { dateStyle: 'medium', timeStyle: 'short' });
+            } catch (e) { return iso; }
+        }
+
+        function filaDetalleHtml(diag) {
+            const detalle = diag.detalle || {};
+            const porArea = detalle.por_area || {};
+            const filas = Object.entries(porArea).map(([clave, d]) => `
+                <div>
+                    <div class="flex items-center justify-between text-xs mb-1">
+                        <span class="font-medium">${AREAS[clave] || clave}</span>
+                        <span class="text-white/50">${d.aciertos}/${d.total} · ${d.pct}%</span>
+                    </div>
+                    <div class="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-chess-sky to-chess-royal" style="width:${d.pct}%"></div>
+                    </div>
+                </div>`).join('');
+            return `<div class="grid sm:grid-cols-2 gap-3 mt-4 pt-4 border-t border-white/10">${filas || '<p class="text-xs text-white/40">Sin detalle por área.</p>'}</div>`;
+        }
+
+        function tarjetaHtml(diag) {
+            const card = document.createElement('div');
+            card.className = 'feature-card !p-5';
+            const contacto = [];
+            if (diag.email) contacto.push(`<a href="mailto:${diag.email}" class="text-chess-sky hover:underline">${diag.email}</a>`);
+            if (diag.telefono) contacto.push(`<a href="https://wa.me/${diag.telefono.replace(/\D/g, '')}" target="_blank" rel="noopener" class="text-chess-sky hover:underline">${diag.telefono}</a>`);
+            card.innerHTML = `
+                <div class="flex items-start justify-between gap-3 flex-wrap">
+                    <div class="min-w-0">
+                        <p class="font-semibold text-white">${diag.nombre}</p>
+                        <p class="text-xs text-white/50 mt-0.5">${formatearFecha(diag.created_at)}${contacto.length ? ' · ' + contacto.join(' · ') : ' · sin correo ni teléfono'}</p>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <p class="font-display font-bold text-chess-sky">${diag.nivel || '?'}</p>
+                        <p class="text-xs text-white/50">${diag.porcentaje != null ? diag.porcentaje + '%' : '?'} · Elo aprox. ${diag.elo || '?'}</p>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
+                    <label class="flex items-center gap-2 text-sm cursor-pointer select-none">
+                        <input type="checkbox" class="atendido-check w-4 h-4" ${diag.atendido ? 'checked' : ''}>
+                        Atendido
+                    </label>
+                    <button type="button" class="btn-outline !text-xs !py-1.5 !px-3 ver-detalle-btn">Ver detalle</button>
+                </div>
+                <div class="detalle-wrap hidden"></div>
+            `;
+
+            const detalleWrap = card.querySelector('.detalle-wrap');
+            card.querySelector('.ver-detalle-btn').addEventListener('click', (e) => {
+                if (detalleWrap.classList.contains('hidden')) {
+                    detalleWrap.innerHTML = filaDetalleHtml(diag);
+                    detalleWrap.classList.remove('hidden');
+                    e.target.textContent = 'Ocultar detalle';
+                } else {
+                    detalleWrap.classList.add('hidden');
+                    e.target.textContent = 'Ver detalle';
+                }
+            });
+
+            card.querySelector('.atendido-check').addEventListener('change', async (e) => {
+                const nuevoValor = e.target.checked;
+                e.target.disabled = true;
+                const { error } = await sb.from('diagnosticos_publicos').update({ atendido: nuevoValor }).eq('id', diag.id);
+                e.target.disabled = false;
+                if (error) {
+                    e.target.checked = !nuevoValor;
+                    alert('No se pudo guardar: ' + error.message);
+                    return;
+                }
+                diag.atendido = nuevoValor;
+                if (soloPendientes) renderLista();
+            });
+
+            return card;
+        }
+
+        function renderLista() {
+            const lista = document.getElementById('lista');
+            const visibles = soloPendientes ? diagnosticos.filter((d) => !d.atendido) : diagnosticos;
+            lista.innerHTML = '';
+            visibles.forEach((d) => lista.appendChild(tarjetaHtml(d)));
+
+            document.getElementById('vacio-msg').classList.toggle('hidden', visibles.length > 0);
+
+            const pendientes = diagnosticos.filter((d) => !d.atendido).length;
+            document.getElementById('resumen').textContent =
+                `${diagnosticos.length} diagnóstico(s) en total · ${pendientes} pendiente(s) por atender.`;
+        }
+
+        document.getElementById('filtro-pendientes').addEventListener('click', () => {
+            soloPendientes = true;
+            document.getElementById('filtro-pendientes').className = 'btn-secondary !text-xs !py-1.5 !px-3';
+            document.getElementById('filtro-todos').className = 'btn-outline !text-xs !py-1.5 !px-3';
+            renderLista();
+        });
+        document.getElementById('filtro-todos').addEventListener('click', () => {
+            soloPendientes = false;
+            document.getElementById('filtro-todos').className = 'btn-secondary !text-xs !py-1.5 !px-3';
+            document.getElementById('filtro-pendientes').className = 'btn-outline !text-xs !py-1.5 !px-3';
+            renderLista();
+        });
+
+        async function init() {
+            const { data } = await sb.auth.getSession();
+            session = data.session;
+            if (!session) { window.location.href = 'login.html?next=diagnosticos.html'; return; }
+
+            const { data: profileData, error: profileError } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
+            if (profileError || !profileData) { showError('No se pudo cargar tu perfil. Cierra sesión y vuelve a entrar.'); return; }
+
+            if (!profileData.is_admin && profileData.role !== 'profesor') {
+                showError('Esta página es solo para profesores y administración.');
+                return;
+            }
+
+            const { data: filas, error: filasError } = await sb.from('diagnosticos_publicos').select('*').order('created_at', { ascending: false });
+            if (filasError) { showError('No se pudieron cargar los diagnósticos: ' + filasError.message); return; }
+            diagnosticos = filas || [];
+            renderLista();
+
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+        }
+        init();
+    </script>
+</body>
+</html>
