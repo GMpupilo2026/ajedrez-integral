@@ -61,6 +61,8 @@
                 </div>
             </div>
 
+            <input id="buscador" type="search" placeholder="Buscar por nombre, correo, teléfono o nivel…" class="footer-input !text-sm w-full" autocomplete="off">
+
             <div id="lista" class="space-y-4"></div>
             <p id="vacio-msg" class="hidden text-sm text-white/50 text-center py-10">No hay diagnósticos que mostrar todavía.</p>
         </main>
@@ -83,6 +85,20 @@
         let session = null;
         let diagnosticos = [];
         let soloPendientes = true;
+        let busqueda = '';
+
+        // Minúsculas y sin tildes, para que "jose" encuentre "José".
+        function normalizar(texto) {
+            return String(texto || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        }
+
+        function coincideBusqueda(diag) {
+            if (!busqueda) return true;
+            const texto = normalizar([diag.nombre, diag.email, diag.telefono, diag.nivel].join(' '));
+            const digitos = busqueda.replace(/\D/g, '');
+            return busqueda.split(/\s+/).every((palabra) => texto.includes(palabra))
+                || (digitos.length >= 3 && String(diag.telefono || '').replace(/\D/g, '').includes(digitos));
+        }
 
         function showError(text) {
             document.getElementById('loading').classList.add('hidden');
@@ -170,17 +186,24 @@
 
         function renderLista() {
             const lista = document.getElementById('lista');
-            const visibles = soloPendientes ? diagnosticos.filter((d) => !d.atendido) : diagnosticos;
+            const visibles = diagnosticos.filter((d) => (!soloPendientes || !d.atendido) && coincideBusqueda(d));
             lista.innerHTML = '';
             visibles.forEach((d) => lista.appendChild(tarjetaHtml(d)));
 
-            document.getElementById('vacio-msg').classList.toggle('hidden', visibles.length > 0);
+            const vacioMsg = document.getElementById('vacio-msg');
+            vacioMsg.textContent = busqueda ? 'Ningún diagnóstico coincide con la búsqueda.' : 'No hay diagnósticos que mostrar todavía.';
+            vacioMsg.classList.toggle('hidden', visibles.length > 0);
 
             const pendientes = diagnosticos.filter((d) => !d.atendido).length;
             document.getElementById('resumen').textContent =
-                `${diagnosticos.length} diagnóstico(s) en total · ${pendientes} pendiente(s) por atender.`;
+                `${diagnosticos.length} diagnóstico(s) en total · ${pendientes} pendiente(s) por atender.`
+                + (busqueda ? ` · ${visibles.length} coinciden con la búsqueda.` : '');
         }
 
+        document.getElementById('buscador').addEventListener('input', (e) => {
+            busqueda = normalizar(e.target.value).trim();
+            renderLista();
+        });
         document.getElementById('filtro-pendientes').addEventListener('click', () => {
             soloPendientes = true;
             document.getElementById('filtro-pendientes').className = 'btn-secondary !text-xs !py-1.5 !px-3';
