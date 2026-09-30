@@ -71,6 +71,12 @@
                         <p class="feature-text mb-4">Toca una pieza y luego la casilla destino para moverla. Los alumnos ven cada jugada en tiempo real.</p>
                         <button id="reset-board-btn" class="btn-outline w-full !text-sm mb-6">Reiniciar tablero</button>
 
+                        <div class="rounded-xl border border-chess-gold/40 bg-chess-gold/10 px-4 py-3 mb-6">
+                            <p class="text-sm text-chess-gold font-semibold mb-1">⏰ Recuerda cerrar tu clase</p>
+                            <p class="text-xs text-white/70 mb-3">Al terminar, cierra la clase para que el tablero vuelva a la posición inicial y no interfiera con lo que ven tus alumnos en su próxima conexión.</p>
+                            <button id="close-class-btn" class="btn-primary w-full !text-sm">Cerrar clase</button>
+                        </div>
+
                         <a href="diagnosticos.html" class="btn-outline w-full !text-sm block text-center mb-6">📋 Diagnósticos de visitantes</a>
 
                         <h2 class="feature-title">Crear cuenta de alumno</h2>
@@ -103,6 +109,19 @@
 
     <div id="loading" class="min-h-screen flex items-center justify-center text-white/50">Cargando…</div>
 
+    <!-- Modal recordatorio: cerrar la clase antes de salir -->
+    <div id="close-class-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+        <div class="feature-card !p-6 w-full max-w-sm">
+            <h2 class="feature-title mb-3">¿Cerrar la clase antes de salir?</h2>
+            <p class="feature-text mb-4">Tu clase sigue abierta. Si sales sin cerrarla, tus alumnos seguirán viendo esta posición en el tablero.</p>
+            <div class="space-y-2">
+                <button id="close-and-logout-btn" class="btn-primary w-full !text-sm">Cerrar clase y salir</button>
+                <button id="logout-anyway-btn" class="btn-outline w-full !text-sm">Salir sin cerrar</button>
+                <button id="close-modal-cancel-btn" class="btn-secondary w-full !text-sm">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal cambiar contraseña -->
     <div id="pw-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
         <div class="feature-card !p-6 w-full max-w-sm">
@@ -121,6 +140,20 @@
         let profile = null;
         let session = null;
         let board = null;
+        let isTeacher = false;
+        const START_FEN = new Chess().fen();
+
+        // La clase está "abierta" mientras el tablero compartido no esté en la posición inicial.
+        function isClassOpen() {
+            return board && board.fen() !== START_FEN;
+        }
+
+        function updateStudentStatus() {
+            if (isTeacher) return;
+            setStatus(isClassOpen()
+                ? "Bienvenido a la clase. Verás el tablero moverse en vivo mientras el profesor juega."
+                : "No hay una clase en curso. El tablero se moverá cuando el profesor inicie la clase.");
+        }
 
         function setStatus(text) {
             document.getElementById("status-banner").textContent = text;
@@ -150,6 +183,7 @@
             if (error) { setStatus("No se pudo cargar el tablero: " + error.message); return; }
             board.loadFen(data.fen);
             updateTurnIndicator();
+            updateStudentStatus();
         }
 
         function subscribeRealtime() {
@@ -157,6 +191,7 @@
                 .on("postgres_changes", { event: "UPDATE", schema: "public", table: "game_state", filter: "id=eq.1" }, (payload) => {
                     board.loadFen(payload.new.fen);
                     updateTurnIndicator();
+                    updateStudentStatus();
                 })
                 .subscribe();
         }
@@ -179,16 +214,14 @@
             if (profileError || !profileData) { setStatus("No se pudo cargar tu perfil."); return; }
             profile = profileData;
 
-            const isTeacher = profile.role === "profesor";
+            isTeacher = profile.role === "profesor";
             const badge = document.getElementById("role-badge");
             badge.textContent = isTeacher ? "Profesor" : "Alumno";
             badge.classList.add(isTeacher ? "bg-chess-gold" : "bg-chess-royal", isTeacher ? "text-chess-dark" : "text-white");
 
             document.getElementById(isTeacher ? "teacher-panel" : "student-panel").classList.remove("hidden");
             if (profile.is_admin) document.getElementById("admin-panel").classList.remove("hidden");
-            setStatus(isTeacher
-                ? "Mueve el tablero: cada jugada se transmite en vivo a todos los alumnos conectados."
-                : "Bienvenido a la clase. Verás el tablero moverse en vivo mientras el profesor juega.");
+            if (isTeacher) setStatus("Mueve el tablero: cada jugada se transmite en vivo a todos los alumnos conectados. Al terminar, recuerda cerrar la clase.");
 
             initBoardForRole(isTeacher);
             await loadGameState();
@@ -198,9 +231,39 @@
             document.getElementById("app").classList.remove("hidden");
         }
 
-        document.getElementById("logout-btn").addEventListener("click", async () => {
+        async function logout() {
+            leavingConfirmed = true;
             await sb.auth.signOut();
             window.location.href = "index.html";
+        }
+
+        async function closeClass() {
+            board.reset();
+            await pushMoveToServer(board.fen(), null);
+            updateTurnIndicator();
+            setStatus("Clase cerrada. El tablero volvió a la posición inicial para tus alumnos.");
+        }
+
+        const closeClassModal = document.getElementById("close-class-modal");
+        let leavingConfirmed = false;
+
+        document.getElementById("logout-btn").addEventListener("click", () => {
+            if (isTeacher && isClassOpen()) { closeClassModal.classList.remove("hidden"); return; }
+            logout();
+        });
+        document.getElementById("close-class-btn").addEventListener("click", closeClass);
+        document.getElementById("close-and-logout-btn").addEventListener("click", async () => {
+            await closeClass();
+            await logout();
+        });
+        document.getElementById("logout-anyway-btn").addEventListener("click", logout);
+        document.getElementById("close-modal-cancel-btn").addEventListener("click", () => closeClassModal.classList.add("hidden"));
+
+        // Aviso del navegador si el profesor cierra la pestaña con la clase abierta.
+        window.addEventListener("beforeunload", (e) => {
+            if (leavingConfirmed || !isTeacher || !isClassOpen()) return;
+            e.preventDefault();
+            e.returnValue = "";
         });
 
         document.getElementById("reset-board-btn").addEventListener("click", async () => {
