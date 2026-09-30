@@ -134,3 +134,48 @@ body { overflow-x: hidden; }
 @media (max-width: 640px) { .feature-card, .course-body, .article-body, .opening-card, .tutorial-card { padding: 1.25rem; } }
 @media (prefers-reduced-motion: no-preference) { section { animation: fadeInUp 0.8s ease-out; } }
 @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ===== CURSO FORMACIÓN AJEDREZ (cursos/academia/formacion-ajedrez.html) ===== */
+.info-card { background: rgba(16, 42, 76, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 1rem; padding: 1.75rem; backdrop-filter: blur(10px); }
+@media (max-width: 640px) { .info-card { padding: 1.25rem; } }
+.tabs { display: flex; gap: 0.25rem; overflow-x: auto; border-bottom: 1px solid rgba(255, 255, 255, 0.1); scrollbar-width: thin; }
+.tab { white-space: nowrap; padding: 0.75rem 1.1rem; font-size: 0.9rem; font-weight: 600; color: rgba(255, 255, 255, 0.55); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color 0.2s ease, border-color 0.2s ease; }
+.tab:hover { color: #fff; }
+.tab.active { color: #fff; border-bottom-color: #f4c430; }
+.chip { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 999px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+.move-chip { padding: 0.1rem 0.45rem; border-radius: 0.35rem; font-family: ui-monospace, monospace; color: rgba(255, 255, 255, 0.8); transition: background 0.2s ease; }
+.move-chip:hover { background: rgba(59, 130, 246, 0.25); }
+.move-chip.active { background: #f4c430; color: #0a1628; font-weight: 700; }
+.board-lite-square.last-move { box-shadow: inset 0 0 0 100px rgba(244, 196, 48, 0.35); }
+.board-lite-square.hint { box-shadow: inset 0 0 0 4px #22c55e; }
+.progress { height: 0.5rem; border-radius: 999px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
+.progress-bar { height: 100%; background: linear-gradient(90deg, #2563eb, #f4c430); transition: width 0.4s ease; }
+.quiz-opt { text-align: left; padding: 0.7rem 1rem; border-radius: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.04); font-size: 0.9rem; transition: all 0.2s ease; }
+.quiz-opt:not(:disabled):hover { border-color: #3b82f6; background: rgba(59, 130, 246, 0.15); }
+.quiz-opt.correct { border-color: #22c55e; background: rgba(34, 197, 94, 0.18); }
+.quiz-opt.wrong { border-color: #ef4444; background: rgba(239, 68, 68, 0.18); }
+.slide-thumb { background: rgba(16, 42, 76, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 1rem; padding: 1.25rem; transition: all 0.3s ease; }
+.slide-thumb:hover { border-color: rgba(244, 196, 48, 0.5); transform: translateY(-3px); }
+.slide-title { font-size: clamp(1.9rem, 4.5vw, 3.6rem); line-height: 1.1; }
+.slide-sub { font-size: clamp(1.1rem, 2.2vw, 1.6rem); }
+.slide-points { font-size: clamp(1.1rem, 2.2vw, 1.7rem); color: rgba(255, 255, 255, 0.85); }
+.slide-points li { position: relative; padding-left: 1.6rem; }
+.slide-points li::before { content: '♟'; position: absolute; left: 0; color: #f4c430; font-size: 0.85em; top: 0.1em; }
+.slide-board .board-lite-grid { max-width: 440px; }
+kbd { font-family: ui-monospace, monospace; font-size: 0.8em; padding: 0.05rem 0.35rem; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 0.3rem; }
+#print-guide { display: none; }
+@media print {
+    body.printing-guide { background: #fff !important; color: #000 !important; }
+    body.printing-guide > *:not(#print-guide) { display: none !important; }
+    body.printing-guide #print-guide { display: block; font-family: Inter, sans-serif; font-size: 11pt; line-height: 1.45; }
+    #print-guide h1 { font-size: 18pt; font-weight: 800; margin-bottom: 6pt; }
+    #print-guide h2 { font-size: 14pt; font-weight: 700; margin: 14pt 0 6pt; border-bottom: 1px solid #999; }
+    #print-guide h3 { font-size: 12pt; font-weight: 700; margin: 10pt 0 4pt; }
+    #print-guide ul, #print-guide ol { padding-left: 18pt; margin-bottom: 6pt; }
+    #print-guide ul { list-style: disc; } #print-guide ol { list-style: decimal; }
+    #print-guide li { margin-bottom: 4pt; }
+    #print-guide table { width: 100%; border-collapse: collapse; }
+    #print-guide th, #print-guide td { border: 1px solid #999; padding: 4pt; vertical-align: top; text-align: left; }
+}
+.board-lite-square[data-color="w"] { color: #fff; text-shadow: 0 0 1px #0a1628, 0 0 2px #0a1628, 0 1px 2px #0a1628, 1px 0 1px #0a1628, -1px 0 1px #0a1628; }
+.board-lite-square[data-color="b"] { color: #0a1628; text-shadow: 0 0 2px rgba(255, 255, 255, 0.85), 0 0 1px #fff; }

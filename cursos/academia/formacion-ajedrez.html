@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formación Ajedrez — AjedrezIntegral</title>
+    <meta name="description" content="Curso Formación Ajedrez: 8 clases de 5 horas con plan de clase, contenido con ejemplos en tablero, presentaciones y prácticas interactivas.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { 'sans': ['Inter', 'sans-serif'], 'display': ['Playfair Display', 'serif'] },
+                    colors: {
+                        'chess-dark': '#0a1628', 'chess-navy': '#102a4c', 'chess-blue': '#1e4d8b',
+                        'chess-royal': '#2563eb', 'chess-sky': '#3b82f6', 'chess-light': '#e0ecf8', 'chess-gold': '#f4c430',
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script src="/js/chess-board-lite.js"></script>
+    <script src="/js/formacion-clases.js"></script>
+</head>
+<body class="font-sans bg-chess-dark text-white antialiased min-h-screen">
+
+    <!-- ===== BARRA SUPERIOR ===== -->
+    <header class="bg-chess-navy/90 backdrop-blur-md border-b border-white/10 sticky top-0 z-40 no-print">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+            <a href="/index.html" class="flex items-center gap-2 shrink-0">
+                <div class="w-9 h-9 bg-gradient-to-br from-chess-royal to-chess-navy rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-chess-gold" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C10.8954 2 10 2.89543 10 4C10 4.74028 10.4022 5.38663 11 5.73242V8H7V11H8.6178L7.5 13.5L5.5 12L4 14L5.5 16L7.5 14.5L9 16.5L7 19L9 21L12 18L15 21L17 19L15 16.5L16.5 14.5L18.5 16L20 14L18.5 12L16.5 13.5L15.4 11H17V8H13V5.73242C13.5978 5.38663 14 4.74028 14 4C14 2.89543 13.1046 2 12 2Z"/>
+                    </svg>
+                </div>
+                <span class="font-display text-base font-bold hidden sm:inline">Ajedrez<span class="text-chess-sky">Integral</span></span>
+            </a>
+            <a href="#" class="font-display text-lg md:text-xl font-bold truncate">Formación Ajedrez</a>
+            <a href="/index.html#cursos" class="text-sm text-white/60 hover:text-white transition shrink-0">← Cursos</a>
+        </div>
+    </header>
+
+    <main id="main" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10"></main>
+
+    <!-- ===== MODO PRESENTACIÓN ===== -->
+    <div id="presenter" class="hidden fixed inset-0 z-50 bg-chess-dark flex flex-col" role="dialog" aria-modal="true" aria-label="Presentación de la clase">
+        <div class="flex items-center justify-between gap-3 px-4 sm:px-6 h-14 border-b border-white/10 bg-chess-navy/80 shrink-0">
+            <span id="pres-class" class="text-sm text-white/60 truncate"></span>
+            <div class="flex items-center gap-2 shrink-0">
+                <button id="pres-notes-btn" class="btn-secondary !py-1.5 !px-3 !text-xs" title="Notas del profesor (N)">Notas</button>
+                <button id="pres-full-btn" class="btn-secondary !py-1.5 !px-3 !text-xs" title="Pantalla completa (F)">⛶</button>
+                <button id="pres-close-btn" class="btn-secondary !py-1.5 !px-3 !text-xs" title="Salir (Esc)">✕</button>
+            </div>
+        </div>
+        <div id="pres-stage" class="flex-1 overflow-auto flex items-center justify-center p-4 sm:p-8">
+            <div id="pres-slide" class="slide w-full max-w-6xl"></div>
+        </div>
+        <div id="pres-notes" class="hidden px-6 py-3 bg-chess-navy text-chess-gold text-sm border-t border-white/10"></div>
+        <div class="flex items-center justify-between gap-3 px-4 sm:px-6 h-14 border-t border-white/10 shrink-0">
+            <button id="pres-prev" class="btn-secondary !py-2 !px-4 !text-sm">← Anterior</button>
+            <span id="pres-counter" class="text-sm text-white/60"></span>
+            <button id="pres-next" class="btn-primary !py-2 !px-4 !text-sm">Siguiente →</button>
+        </div>
+    </div>
+
+    <script src="/js/formacion.js"></script>
+</body>
+</html>
