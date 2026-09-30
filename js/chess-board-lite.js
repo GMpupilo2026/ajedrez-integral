@@ -13,11 +13,17 @@ class ChessBoardLite {
    * @param {object} opts
    * @param {boolean} opts.interactive - si true, permite mover piezas (rol profesor)
    * @param {(fen: string, sanMove: string) => void} opts.onMove - callback tras un movimiento legal
+   * @param {boolean} opts.flipped - si true, dibuja el tablero desde el lado de las negras
+   * @param {boolean} opts.solidPieces - si true, usa glifos rellenos para ambos bandos y marca
+   *   cada casilla con data-color="w"|"b", para que el CSS coloree las piezas por bando
+   *   (y no según el color de la casilla)
    */
   constructor(container, opts = {}) {
     this.container = container;
     this.interactive = !!opts.interactive;
     this.onMove = opts.onMove || (() => {});
+    this.flipped = !!opts.flipped;
+    this.solidPieces = !!opts.solidPieces;
     this.game = new Chess();
     this.selected = null;
     this._buildGrid();
@@ -28,8 +34,10 @@ class ChessBoardLite {
     this.container.classList.add("board-lite-grid");
     this.squareEls = {};
     const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
-    for (let rank = 8; rank >= 1; rank--) {
-      for (const file of files) {
+    const ranks = this.flipped ? [1, 2, 3, 4, 5, 6, 7, 8] : [8, 7, 6, 5, 4, 3, 2, 1];
+    const fileOrder = this.flipped ? [...files].reverse() : files;
+    for (const rank of ranks) {
+      for (const file of fileOrder) {
         const square = `${file}${rank}`;
         const isLight = (files.indexOf(file) + rank) % 2 === 1;
         const el = document.createElement("div");
@@ -72,7 +80,8 @@ class ChessBoardLite {
         const square = `${files[f]}${rank}`;
         const piece = board[r][f];
         const el = this.squareEls[square];
-        el.textContent = piece ? PIECE_GLYPHS[piece.color === "w" ? piece.type.toUpperCase() : piece.type] : "";
+        el.textContent = piece ? PIECE_GLYPHS[piece.color === "w" && !this.solidPieces ? piece.type.toUpperCase() : piece.type] : "";
+        if (this.solidPieces) el.dataset.color = piece ? piece.color : "";
         el.classList.remove("selected", "legal-move", "legal-capture");
       }
     }
