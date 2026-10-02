@@ -31,6 +31,22 @@ contiene el curso presencial completo: 8 clases de 5 horas (300 minutos) cada un
 El contenido está en `js/formacion-clases.js`. Todas las posiciones y soluciones están
 verificadas con chess.js 0.10.3; si se modifica una posición hay que volver a verificarla.
 
+### Edición por administradores y material adjunto
+
+Los usuarios con `profiles.is_admin` que hayan iniciado sesión ven en la página del curso:
+
+- **✏️ Editar clase** / **✏️ Editar datos del curso**: editor de todo el contenido (plan,
+  teoría y ejemplos, diapositivas, prácticas, control y tarea). Al guardar se valida con
+  chess.js que las posiciones FEN y las jugadas sean legales y que los mates sean mate.
+  Las ediciones se guardan en la tabla `curso_contenido` y reemplazan al contenido de
+  `js/formacion-clases.js`; **Restaurar original** las descarta.
+- **Material adjunto** (pestaña de cada clase y sección en la portada): subir y eliminar
+  presentaciones, PDF, imágenes o cualquier archivo (máx. 50 MB). Se guardan en el bucket
+  `curso-adjuntos` de Storage y en la tabla `curso_adjuntos`. Todos pueden descargarlos.
+
+La escritura está protegida por RLS (`public.soy_admin()`); ver
+`supabase/migrations/20261001000000_curso_contenido_adjuntos.sql`.
+
 ## Uso
 
 Abre `index.html` en tu navegador. Tailwind se carga vía CDN, no requiere build.

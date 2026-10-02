@@ -5,9 +5,16 @@
 // Rutas (hash): #            → portada del curso
 //               #clase-3     → clase 3, pestaña "Plan"
 //               #clase-3/practicas → clase 3, pestaña indicada
+//
+// Los administradores pueden editar el contenido y adjuntar material
+// (ver js/formacion-admin.js); las ediciones guardadas en Supabase
+// reemplazan al contenido original de js/formacion-clases.js.
 
 (function () {
+  const CURSO_ID = "formacion-ajedrez";
   const CURSO = window.FORMACION_CURSO;
+  const ORIGINAL = JSON.parse(JSON.stringify(CURSO));
+  const ADMIN = window.FormacionAdmin;
   const main = document.getElementById("main");
   const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -18,7 +25,27 @@
     { id: "practicas", label: "Prácticas" },
     { id: "control", label: "Control" },
     { id: "tarea", label: "Tarea" },
+    { id: "material", label: "Material adjunto" },
   ];
+
+  const LISTAS = ["agenda", "objetivos", "contenido", "diapositivas", "practicas", "preguntas", "tarea"];
+  const GENERALES = ["titulo", "subtitulo", "descripcion", "publico", "metodologia", "materiales"];
+
+  // Aplica sobre el contenido original las ediciones guardadas por un administrador.
+  function aplicarEdiciones() {
+    const cont = ADMIN?.state.contenido || {};
+    GENERALES.forEach((k) => { CURSO[k] = ORIGINAL[k]; });
+    if (cont[0]) GENERALES.forEach((k) => { if (cont[0].datos[k] !== undefined) CURSO[k] = cont[0].datos[k]; });
+    CURSO.clases = ORIGINAL.clases.map((c) => {
+      const ed = cont[c.numero]?.datos;
+      const clase = JSON.parse(JSON.stringify(ed ? { ...c, ...ed, numero: c.numero } : c));
+      LISTAS.forEach((k) => { if (!Array.isArray(clase[k])) clase[k] = []; });
+      return clase;
+    });
+    ["metodologia", "materiales"].forEach((k) => { if (!Array.isArray(CURSO[k])) CURSO[k] = []; });
+  }
+
+  const esAdmin = () => !!ADMIN?.state.esAdmin;
 
   const TIPOS = {
     inicio: { label: "Inicio", cls: "bg-chess-sky/20 text-chess-sky" },
@@ -87,6 +114,7 @@
         <h1 class="font-display text-4xl sm:text-5xl font-bold mt-3 mb-3">${esc(CURSO.titulo)}</h1>
         <p class="text-chess-gold font-semibold mb-4">${esc(CURSO.subtitulo)}</p>
         <p class="text-white/70 max-w-3xl mx-auto">${esc(CURSO.descripcion)}</p>
+        ${esAdmin() ? `<button id="edit-curso-btn" class="btn-outline !text-sm mt-6">✏️ Editar datos del curso</button>` : ""}
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-3xl mx-auto mt-10">
           ${[
             [CURSO.clases.length, "clases"],
@@ -131,7 +159,18 @@
           <ul class="feature-text list-disc pl-5 space-y-1">${CURSO.materiales.map((m) => `<li>${esc(m)}</li>`).join("")}</ul>
           <p class="text-xs text-white/40 mt-4">${nDiapos} diapositivas en total, listas para proyectar desde cada clase.</p>
         </div>
-      </section>`;
+      </section>
+
+      ${esAdmin() || ADMIN?.adjuntosDe(0).length ? `
+      <section class="info-card mt-10">
+        <h2 class="feature-title">Material del curso</h2>
+        <div id="material-curso"></div>
+      </section>` : ""}`;
+    const mat = document.getElementById("material-curso");
+    if (mat) ADMIN.renderAdjuntos(mat, 0);
+    document.getElementById("edit-curso-btn")?.addEventListener("click", () => {
+      ADMIN.abrirEditor({ clase: 0, actual: CURSO, duracionMin: CURSO.duracionClaseMin, onGuardado: refrescar });
+    });
     window.scrollTo(0, 0);
   }
 
@@ -157,11 +196,15 @@
         <div class="flex flex-wrap gap-2 shrink-0 no-print">
           <button id="present-btn" class="btn-gold">▶ Presentar</button>
           <button id="print-btn" class="btn-secondary">🖨 Imprimir guía</button>
+          ${esAdmin() ? `<button id="edit-btn" class="btn-outline">✏️ Editar clase</button>` : ""}
         </div>
       </section>
 
       <div class="tabs no-print" role="tablist">
-        ${TABS.map((t) => `<a href="#clase-${num}/${t.id}" role="tab" aria-selected="${t.id === tab}" class="tab ${t.id === tab ? "active" : ""}">${t.label}</a>`).join("")}
+        ${TABS.map((t) => {
+          const n = t.id === "material" ? ADMIN?.adjuntosDe(num).length : 0;
+          return `<a href="#clase-${num}/${t.id}" role="tab" aria-selected="${t.id === tab}" class="tab ${t.id === tab ? "active" : ""}">${t.label}${n ? ` (${n})` : ""}</a>`;
+        }).join("")}
       </div>
 
       <div id="tab-panel" class="mt-8"></div>
@@ -174,6 +217,9 @@
     main.querySelector(".tab.active")?.scrollIntoView({ block: "nearest", inline: "center" });
     document.getElementById("present-btn").addEventListener("click", () => openPresenter(clase, 0));
     document.getElementById("print-btn").addEventListener("click", () => printGuide(clase));
+    document.getElementById("edit-btn")?.addEventListener("click", () => {
+      ADMIN.abrirEditor({ clase: clase.numero, actual: clase, duracionMin: CURSO.duracionClaseMin, onGuardado: refrescar });
+    });
 
     const panel = document.getElementById("tab-panel");
     ({
@@ -183,6 +229,7 @@
       practicas: renderPracticas,
       control: renderControl,
       tarea: renderTarea,
+      material: renderMaterial,
     })[tab](panel, clase);
   }
 
@@ -554,6 +601,21 @@
       </div>`;
   }
 
+  // ----- Material adjunto (presentaciones, PDF, etc.) -----
+  function renderMaterial(panel, clase) {
+    if (!ADMIN || !window.sb) {
+      panel.innerHTML = `<p class="text-white/50">No se pudo cargar el material adjunto.</p>`;
+      return;
+    }
+    panel.innerHTML = `
+      <div class="info-card max-w-4xl">
+        <h2 class="feature-title">Material adjunto de la clase ${clase.numero}</h2>
+        <p class="feature-text mb-6">Presentaciones, documentos y archivos de apoyo para esta clase.</p>
+        <div id="material-clase"></div>
+      </div>`;
+    ADMIN.renderAdjuntos(document.getElementById("material-clase"), clase.numero);
+  }
+
   // ===================================================================
   // GUÍA IMPRIMIBLE (todas las secciones de la clase en una página)
   // ===================================================================
@@ -596,6 +658,7 @@
   };
 
   function openPresenter(clase, i) {
+    if (!clase.diapositivas.length) { alert("Esta clase no tiene diapositivas."); return; }
     pres.clase = clase;
     pres.i = i;
     document.getElementById("pres-class").textContent = `${CURSO.titulo} · Clase ${clase.numero}: ${clase.titulo}`;
@@ -673,6 +736,36 @@
     }
   }
 
+  // Vuelve a pintar la vista actual tras guardar una edición.
+  function refrescar() {
+    const y = window.scrollY;
+    aplicarEdiciones();
+    route();
+    window.scrollTo(0, y);
+  }
+
   window.addEventListener("hashchange", route);
-  route();
+  aplicarEdiciones();
+
+  // Se espera un momento a las ediciones guardadas para no mostrar primero el
+  // contenido original; si Supabase tarda o falla, se muestra el original.
+  if (ADMIN && window.sb) {
+    let pintado = false;
+    const pintar = () => { if (!pintado) { pintado = true; route(); } };
+    const espera = setTimeout(pintar, 2500);
+    ADMIN.cargar(CURSO_ID)
+      .catch((e) => console.error(e))
+      .finally(() => {
+        clearTimeout(espera);
+        ADMIN.state.onChange = () => {
+          // Actualiza el contador de la pestaña "Material adjunto".
+          const tab = main.querySelector('.tab[href$="/material"]');
+          const n = ADMIN.adjuntosDe(+main.dataset.clase).length;
+          if (tab) tab.textContent = `Material adjunto${n ? ` (${n})` : ""}`;
+        };
+        if (pintado) refrescar(); else { aplicarEdiciones(); pintar(); }
+      });
+  } else {
+    route();
+  }
 })();
