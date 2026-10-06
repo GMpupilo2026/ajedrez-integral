@@ -26,6 +26,8 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <script src="js/supabase-client.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script src="js/diagnostico-items.js"></script>
 </head>
 <body class="font-sans bg-chess-dark text-white antialiased min-h-screen">
 
@@ -78,6 +80,7 @@
         const AREAS = {
             reglas: 'Reglas', material: 'Material', apertura: 'Aperturas', tactica: 'Táctica',
             mate: 'Mates', finales: 'Finales', estrategia: 'Estrategia', calculo: 'Cálculo',
+            maestria: 'Maestría',
         };
 
         let session = null;
@@ -112,9 +115,81 @@
             return `<div class="grid sm:grid-cols-2 gap-3 mt-4 pt-4 border-t border-white/10">${filas || '<p class="text-xs text-white/40">Sin detalle por área.</p>'}</div>`;
         }
 
+        // ===== Descarga de preguntas y respuestas (CSV que abre Excel / Sheets) =====
+        const ITEMS_POR_ID = Object.fromEntries((window.DIAGNOSTICO_ITEMS || []).map((it) => [it.id, it]));
+        const LETRA_PIEZA_ES = { K: 'R', Q: 'D', R: 'T', B: 'A', N: 'C' };
+
+        // Texto de cada opción de un ítem, en su orden original. En las preguntas
+        // con tablero la etiqueta es la jugada en SAN (con letras en español),
+        // igual que la vio el estudiante en diagnostico.html.
+        function opcionesDe(item) {
+            if (item.tipo !== 'opcion_tablero') return item.opciones;
+            return item.tablero.opciones.map((mv) => {
+                const r = (typeof Chess === 'function') ? new Chess(item.fen).move({ from: mv.from, to: mv.to, promotion: mv.promotion }) : null;
+                return r ? r.san.replace(/[KQRBN]/g, (l) => LETRA_PIEZA_ES[l]) : `${mv.from}-${mv.to}`;
+            });
+        }
+
+        function celdaCsv(valor) {
+            const texto = valor == null ? '' : String(valor);
+            return /[";\n\r]/.test(texto) ? `"${texto.replace(/"/g, '""')}"` : texto;
+        }
+
+        function descargarRespuestas(diag) {
+            const respuestas = (diag.detalle && diag.detalle.respuestas) || [];
+            const filas = [[
+                'N°', 'Área', 'Pregunta', 'Posición (FEN)', 'Opciones',
+                'Respuesta del estudiante', 'Respuesta correcta', 'Resultado', 'Explicación',
+            ]];
+            respuestas.forEach((r, i) => {
+                const item = ITEMS_POR_ID[r.id];
+                const opciones = item ? opcionesDe(item) : [];
+                let elegida = r.elegida_texto;
+                if (elegida == null && r.elegida != null && opciones[r.elegida] != null) elegida = opciones[r.elegida];
+                filas.push([
+                    i + 1,
+                    AREAS[r.area] || r.area,
+                    item ? item.enunciado : `(pregunta ${r.id} ya no existe en el banco)`,
+                    item && item.fen ? item.fen : '',
+                    opciones.map((o, j) => `${String.fromCharCode(65 + j)}) ${o}`).join(' | '),
+                    elegida != null ? elegida : '(no registrada)',
+                    item ? opciones[item.correcta] : '',
+                    r.correcta ? 'Correcta' : 'Incorrecta',
+                    item ? item.explica : '',
+                ]);
+            });
+
+            const encabezado = [
+                ['Diagnóstico de nivel — AjedrezIntegral'],
+                ['Estudiante', diag.nombre],
+                ['Correo', diag.email || ''],
+                ['Teléfono', diag.telefono || ''],
+                ['Fecha', formatearFecha(diag.created_at)],
+                ['Nivel', diag.nivel || ''],
+                ['Porcentaje', diag.porcentaje != null ? diag.porcentaje + '%' : ''],
+                ['Elo aprox.', diag.elo || ''],
+                ['Aciertos', `${(diag.detalle && diag.detalle.aciertos_totales) ?? respuestas.filter((r) => r.correcta).length} de ${respuestas.length}`],
+                [],
+            ];
+            // Separador ";" y BOM UTF-8 para que Excel en español lo abra con tildes y columnas correctas.
+            const csv = '\uFEFF' + encabezado.concat(filas).map((fila) => fila.map(celdaCsv).join(';')).join('\r\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const nombreArchivo = (diag.nombre || 'estudiante').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_|_$/g, '');
+            const fecha = (diag.created_at || '').slice(0, 10);
+            a.href = url;
+            a.download = `diagnostico_${nombreArchivo || 'estudiante'}_${fecha}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
         function tarjetaHtml(diag) {
             const card = document.createElement('div');
             card.className = 'feature-card !p-5';
+            const tieneRespuestas = !!(diag.detalle && Array.isArray(diag.detalle.respuestas) && diag.detalle.respuestas.length);
             const contacto = [];
             if (diag.email) contacto.push(`<a href="mailto:${diag.email}" class="text-chess-sky hover:underline">${diag.email}</a>`);
             if (diag.telefono) contacto.push(`<a href="https://wa.me/${diag.telefono.replace(/\D/g, '')}" target="_blank" rel="noopener" class="text-chess-sky hover:underline">${diag.telefono}</a>`);
@@ -134,10 +209,15 @@
                         <input type="checkbox" class="atendido-check w-4 h-4" ${diag.atendido ? 'checked' : ''}>
                         Atendido
                     </label>
-                    <button type="button" class="btn-outline !text-xs !py-1.5 !px-3 ver-detalle-btn">Ver detalle</button>
+                    <div class="flex gap-2 flex-wrap justify-end">
+                        <button type="button" class="btn-outline !text-xs !py-1.5 !px-3 descargar-btn" ${tieneRespuestas ? '' : 'disabled title="Este diagnóstico no tiene respuestas guardadas"'}>⬇ Descargar respuestas</button>
+                        <button type="button" class="btn-outline !text-xs !py-1.5 !px-3 ver-detalle-btn">Ver detalle</button>
+                    </div>
                 </div>
                 <div class="detalle-wrap hidden"></div>
             `;
+
+            card.querySelector('.descargar-btn').addEventListener('click', () => descargarRespuestas(diag));
 
             const detalleWrap = card.querySelector('.detalle-wrap');
             card.querySelector('.ver-detalle-btn').addEventListener('click', (e) => {

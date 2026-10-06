@@ -218,6 +218,7 @@
                     const indices = barajar(item.opciones.map((_, i) => i));
                     return {
                         item,
+                        indices,
                         etiquetas: indices.map((i) => item.opciones[i]),
                         correctaShuffled: indices.indexOf(item.correcta),
                     };
@@ -237,6 +238,7 @@
                 const indices = barajar(etiquetasCompletas.map((_, i) => i));
                 return {
                     item,
+                    indices,
                     etiquetas: indices.map((i) => etiquetasCompletas[i]),
                     correctaShuffled: indices.indexOf(item.correcta),
                 };
@@ -270,7 +272,7 @@
         // ===== Estado del quiz =====
         let preguntas = [];
         let idx = 0;
-        let respuestas = []; // { item, correcta: bool }
+        let respuestas = []; // { item, correcta: bool, elegida: índice original, elegidaTexto }
 
         const introScreen = document.getElementById('intro-screen');
         const quizScreen = document.getElementById('quiz-screen');
@@ -347,7 +349,12 @@
                 feedback.textContent = `✘ No era esa. ${actual.item.explica}`;
             }
 
-            respuestas.push({ item: actual.item, correcta });
+            // Se guarda el índice ORIGINAL de la opción elegida (antes de barajar) y su
+            // texto, para que el profesor pueda descargar qué respondió exactamente.
+            respuestas.push({
+                item: actual.item, correcta,
+                elegida: actual.indices[iElegida], elegidaTexto: actual.etiquetas[iElegida],
+            });
             document.getElementById('next-btn').classList.remove('hidden');
         }
 
@@ -398,7 +405,10 @@
                 por_area: Object.fromEntries(Object.entries(porArea).map(([clave, d]) => [
                     clave, { aciertos: d.aciertos, total: d.total, pct: d.peso ? Math.round((d.logrado / d.peso) * 100) : 0 },
                 ])),
-                respuestas: respuestas.map((r) => ({ id: r.item.id, area: r.item.area, correcta: r.correcta })),
+                respuestas: respuestas.map((r) => ({
+                    id: r.item.id, area: r.item.area, correcta: r.correcta,
+                    elegida: r.elegida, elegida_texto: r.elegidaTexto,
+                })),
             };
             const payload = {
                 nombre, email: email || null, telefono: telefono || null,
