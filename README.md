@@ -49,8 +49,8 @@ La escritura está protegida por RLS (`public.soy_admin()`); ver
 
 ## Informe mensual del profesor
 
-`informe-mensual.html` (enlace "📄 Descargar mi informe mensual" en el panel del profesor de
-`clases.html`) deja al profesor elegir un mes (el actual y los 12 anteriores) y descargarlo:
+`informe-mensual.html` (enlace "📄 Descargar mi informe mensual" en los paneles del profesor y de
+administración de `clases.html`) deja al profesor elegir un mes (el actual y los 12 anteriores) y descargarlo:
 
 - **Descargar PDF**: abre la impresión del navegador con una hoja limpia en blanco y negro
   ("Guardar como PDF"); el archivo sale como `informe_AAAA-MM_Nombre.pdf`.
