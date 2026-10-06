@@ -84,6 +84,14 @@
         };
 
         let session = null;
+        let perfil = null;
+
+        // Solo profesores, supervisores y administración pueden ver y descargar
+        // los diagnósticos; los alumnos nunca. La base de datos lo impone
+        // también (RLS de diagnosticos_publicos), esto es la capa de la página.
+        function esPersonal(p) {
+            return !!p && (p.is_admin === true || p.role === 'admin' || p.role === 'profesor' || p.es_supervisor === true);
+        }
         let diagnosticos = [];
         let soloPendientes = true;
 
@@ -136,6 +144,7 @@
         }
 
         function descargarRespuestas(diag) {
+            if (!esPersonal(perfil)) { alert('Solo profesores, supervisores y administración pueden descargar las respuestas.'); return; }
             const respuestas = (diag.detalle && diag.detalle.respuestas) || [];
             const filas = [[
                 'N°', 'Área', 'Pregunta', 'Posición (FEN)', 'Opciones',
@@ -282,8 +291,9 @@
             const { data: profileData, error: profileError } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
             if (profileError || !profileData) { showError('No se pudo cargar tu perfil. Cierra sesión y vuelve a entrar.'); return; }
 
-            if (!profileData.is_admin && profileData.role !== 'profesor') {
-                showError('Esta página es solo para profesores y administración.');
+            perfil = profileData;
+            if (!esPersonal(perfil)) {
+                showError('Esta página es solo para profesores, supervisores y administración.');
                 return;
             }
 
