@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi informe mensual — AjedrezIntegral</title>
+    <meta name="description" content="Panel para profesores: ver y descargar el informe mensual de su actividad.">
+    <meta name="robots" content="noindex">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { 'sans': ['Inter', 'sans-serif'], 'display': ['Playfair Display', 'serif'] },
+                    colors: {
+                        'chess-dark': '#0a1628', 'chess-navy': '#102a4c', 'chess-blue': '#1e4d8b',
+                        'chess-royal': '#2563eb', 'chess-sky': '#3b82f6', 'chess-light': '#e0ecf8', 'chess-gold': '#f4c430',
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="js/supabase-client.js"></script>
+    <style>
+        .tabla { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        .tabla th, .tabla td { text-align: left; padding: 0.35rem 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .tabla th { color: rgba(255,255,255,0.5); font-weight: 600; }
+        .tabla td.num, .tabla th.num { text-align: right; }
+
+        /* "Descargar PDF" usa la impresión del navegador: solo sale el informe, en blanco y negro. */
+        @media print {
+            @page { margin: 1.5cm; }
+            body { background: #fff !important; color: #111 !important; }
+            header, .no-print { display: none !important; }
+            main { padding: 0 !important; max-width: none !important; }
+            #informe .feature-card { background: none !important; border: none !important; box-shadow: none !important; backdrop-filter: none !important; transform: none !important; padding: 0 !important; margin-bottom: 1.2rem; }
+            #informe, #informe * { color: #111 !important; }
+            #informe .muted { color: #555 !important; }
+            .tabla th, .tabla td { border-bottom: 1px solid #ccc; }
+            .tabla tr, .bloque { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body class="font-sans bg-chess-dark text-white antialiased min-h-screen">
+
+    <div id="app" class="hidden">
+        <header class="bg-chess-navy/90 backdrop-blur-md border-b border-white/10 sticky top-0 z-40">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+                <a href="index.html" class="flex items-center gap-2 shrink-0">
+                    <div class="w-9 h-9 bg-gradient-to-br from-chess-royal to-chess-navy rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-chess-gold" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C10.8954 2 10 2.89543 10 4C10 4.74028 10.4022 5.38663 11 5.73242V8H7V11H8.6178L7.5 13.5L5.5 12L4 14L5.5 16L7.5 14.5L9 16.5L7 19L9 21L12 18L15 21L17 19L15 16.5L16.5 14.5L18.5 16L20 14L18.5 12L16.5 13.5L15.4 11H17V8H13V5.73242C13.5978 5.38663 14 4.74028 14 4C14 2.89543 13.1046 2 12 2Z"/>
+                        </svg>
+                    </div>
+                    <span class="font-display text-base font-bold hidden sm:inline">Ajedrez<span class="text-chess-sky">Integral</span></span>
+                </a>
+                <h1 class="font-display text-base md:text-xl font-bold">📄 Mi informe mensual</h1>
+                <a href="clases.html" class="btn-secondary !py-2 !px-4 !text-xs">← Academia</a>
+            </div>
+        </header>
+
+        <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
+            <div class="feature-card !p-5 no-print">
+                <div class="flex items-end justify-between flex-wrap gap-3">
+                    <div>
+                        <label for="mes" class="text-xs text-white/60 block mb-1">Mes</label>
+                        <select id="mes" class="footer-input !text-sm !py-2"></select>
+                    </div>
+                    <div class="flex gap-2 flex-wrap">
+                        <button id="pdf-btn" class="btn-primary !text-xs !py-2 !px-4" disabled>⬇️ Descargar PDF</button>
+                        <button id="csv-btn" class="btn-outline !text-xs !py-2 !px-4" disabled>⬇️ Descargar Excel (CSV)</button>
+                    </div>
+                </div>
+                <p id="aviso" class="text-xs text-white/50 mt-3"></p>
+            </div>
+
+            <p id="cargando-mes" class="hidden text-sm text-white/50 text-center py-10">Cargando el informe…</p>
+            <p id="error-mes" class="hidden text-sm text-red-400 text-center py-10"></p>
+            <div id="informe" class="space-y-6"></div>
+        </main>
+    </div>
+
+    <div id="loading" class="min-h-screen flex items-center justify-center text-white/50">Cargando…</div>
+
+    <div id="error-state" class="hidden min-h-screen flex flex-col items-center justify-center text-center px-4 gap-3">
+        <p class="text-4xl">🚫</p>
+        <p id="error-text" class="text-white/60"></p>
+        <a href="clases.html" class="btn-secondary !text-sm">← Volver a Clases</a>
+    </div>
+
+    <script>
+        const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+
+        // Mismo orden y nombres que devuelve actividad_profesor() (y que queda guardado en informes_profesor.datos).
+        const ACTIVIDAD = [
+            ['alumnos', 'Alumnos a cargo'],
+            ['alumnos_activos', 'Alumnos activos'],
+            ['ejercicios_alumnos', 'Ejercicios hechos por los alumnos'],
+            ['clases_en_linea', 'Clases en línea'],
+            ['clases_presenciales', 'Clases presenciales'],
+            ['minutos_clase', 'Minutos de clase'],
+            ['asistencias', 'Asistencias'],
+            ['clases_programadas', 'Clases programadas en el horario'],
+            ['clases_programadas_dadas', 'Clases programadas que se dieron'],
+            ['tareas_puestas', 'Tareas puestas'],
+            ['tareas_completadas', 'Tareas completadas'],
+            ['tareas_vencidas', 'Tareas vencidas sin hacer'],
+            ['examenes_puestos', 'Exámenes puestos'],
+            ['examenes_rendidos', 'Exámenes rendidos'],
+            ['nota_promedio', 'Nota promedio de exámenes'],
+            ['notas_bitacora', 'Notas en la bitácora'],
+            ['planes_nuevos', 'Planes de clase nuevos'],
+        ];
+
+        const TEXTOS = [
+            ['resumen', 'Resumen del mes'],
+            ['logros', 'Logros'],
+            ['dificultades', 'Dificultades'],
+            ['proximo_mes', 'Plan para el próximo mes'],
+        ];
+
+        let session = null, profile = null;
+        // Lo que está en pantalla, para que las descargas usen exactamente lo mismo.
+        let actual = null;
+
+        function showError(text) {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('error-text').textContent = text;
+            document.getElementById('error-state').classList.remove('hidden');
+        }
+
+        function esc(v) {
+            return String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        function nombreProfesor() {
+            return (profile.full_name || '').trim() || (profile.email || '').split('@')[0];
+        }
+
+        function mesEnPalabras(periodo) {
+            const [y, m] = periodo.split('-').map(Number);
+            return MESES[m - 1] + ' de ' + y;
+        }
+
+        function formatearFecha(iso) {
+            try { return new Date(iso).toLocaleString('es-CR', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'America/Costa_Rica' }); }
+            catch (e) { return iso; }
+        }
+
+        function valor(v) {
+            if (v == null) return '—';
+            if (typeof v === 'number' && !Number.isInteger(v)) return v.toLocaleString('es-CR', { maximumFractionDigits: 1 });
+            return String(v);
+        }
+
+        // El mes actual y los 12 anteriores: los mismos que acepta guardar_informe_mensual().
+        function llenarMeses() {
+            const sel = document.getElementById('mes');
+            const hoy = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Costa_Rica' }));
+            for (let i = 0; i <= 12; i++) {
+                const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
+                const periodo = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-01';
+                const opt = document.createElement('option');
+                opt.value = periodo;
+                opt.textContent = mesEnPalabras(periodo).replace(/^./, (c) => c.toUpperCase());
+                sel.appendChild(opt);
+            }
+            // Por defecto el mes pasado, que es el que normalmente se informa.
+            sel.selectedIndex = 1;
+        }
+
+        async function cargarMes(periodo) {
+            const informeEl = document.getElementById('informe');
+            const cargandoEl = document.getElementById('cargando-mes');
+            const errorEl = document.getElementById('error-mes');
+            informeEl.innerHTML = '';
+            errorEl.classList.add('hidden');
+            cargandoEl.classList.remove('hidden');
+            document.getElementById('pdf-btn').disabled = true;
+            document.getElementById('csv-btn').disabled = true;
+            actual = null;
+
+            try {
+                const { data: fila, error } = await sb.from('informes_profesor').select('*')
+                    .eq('profesor_id', session.user.id).eq('periodo', periodo).maybeSingle();
+                if (error) throw error;
+
+                let datos = null, detalle = null;
+                if (fila && fila.estado === 'enviado') {
+                    // Enviado: se descarga la foto que quedó guardada al enviarlo, no números recalculados.
+                    datos = fila.datos;
+                    const { data: d, error: e } = await sb.rpc('detalle_informe_mensual', { p_informe: fila.id });
+                    if (e) throw e;
+                    detalle = d;
+                } else {
+                    const { data: a, error: e } = await sb.rpc('actividad_profesor', { p_profesor: session.user.id, p_periodo: periodo });
+                    if (e) throw e;
+                    datos = Array.isArray(a) ? a[0] : a;
+                }
+
+                actual = { periodo, fila, datos: datos || {}, detalle };
+                render();
+                document.getElementById('pdf-btn').disabled = false;
+                document.getElementById('csv-btn').disabled = false;
+            } catch (err) {
+                errorEl.textContent = 'No se pudo cargar el informe: ' + (err.message || err);
+                errorEl.classList.remove('hidden');
+            } finally {
+                cargandoEl.classList.add('hidden');
+            }
+        }
+
+        function estadoTexto() {
+            const fila = actual.fila;
+            if (!fila) return 'Sin escribir (solo la actividad registrada en la plataforma)';
+            if (fila.estado === 'enviado') return 'Enviado el ' + formatearFecha(fila.enviado_at);
+            return 'Borrador (todavía no enviado)';
+        }
+
+        function render() {
+            const { periodo, fila, datos, detalle } = actual;
+            const aviso = document.getElementById('aviso');
+            aviso.textContent = fila && fila.estado === 'enviado'
+                ? 'Este informe ya se envió: la descarga muestra los números tal como quedaron al enviarlo.'
+                : 'Este informe no se ha enviado: los números son la actividad registrada hasta hoy y pueden cambiar.';
+
+            const partes = [];
+
+            partes.push(`
+                <div class="feature-card bloque">
+                    <p class="text-xs uppercase tracking-wide text-white/50 muted">Informe mensual del profesor</p>
+                    <h2 class="font-display text-2xl font-bold mt-1">${esc(mesEnPalabras(periodo).replace(/^./, (c) => c.toUpperCase()))}</h2>
+                    <p class="text-sm text-white/70 mt-1">${esc(nombreProfesor())}${profile.email ? ' · ' + esc(profile.email) : ''}</p>
+                    <p class="text-xs text-white/50 muted mt-1">${esc(estadoTexto())}</p>
+                </div>`);
+
+            const textos = TEXTOS.filter(([k]) => fila && (fila[k] || '').trim());
+            if (textos.length) {
+                partes.push(`<div class="feature-card bloque space-y-4">${textos.map(([k, label]) => `
+                    <div>
+                        <h3 class="font-semibold text-sm">${label}</h3>
+                        <p class="text-sm text-white/80 mt-1 whitespace-pre-line">${esc(fila[k].trim())}</p>
+                    </div>`).join('')}</div>`);
+            }
+
+            if (fila && (fila.comentario || '').trim()) {
+                partes.push(`
+                    <div class="feature-card bloque">
+                        <h3 class="font-semibold text-sm">Comentario de supervisión</h3>
+                        <p class="text-sm text-white/80 mt-1 whitespace-pre-line">${esc(fila.comentario.trim())}</p>
+                        ${fila.comentario_at ? `<p class="text-xs text-white/50 muted mt-1">${esc(formatearFecha(fila.comentario_at))}</p>` : ''}
+                    </div>`);
+            }
+
+            partes.push(`
+                <div class="feature-card bloque">
+                    <h3 class="font-semibold text-sm mb-2">Actividad del mes</h3>
+                    <table class="tabla"><tbody>
+                        ${ACTIVIDAD.map(([k, label]) => `<tr><td>${label}</td><td class="num font-semibold">${esc(valor(datos[k]))}</td></tr>`).join('')}
+                    </tbody></table>
+                </div>`);
+
+            if (detalle) {
+                const clases = detalle.clases || [];
+                partes.push(`
+                    <div class="feature-card">
+                        <h3 class="font-semibold text-sm mb-2">Clases dadas (${clases.length})</h3>
+                        ${clases.length ? `<div class="overflow-x-auto"><table class="tabla">
+                            <thead><tr><th>Fecha</th><th>Modalidad</th><th>Tema</th><th class="num">Minutos</th><th class="num">Asistentes</th><th class="num">Tarde</th></tr></thead>
+                            <tbody>${clases.map((c) => `<tr>
+                                <td>${esc(formatearFecha(c.inicio))}</td>
+                                <td>${c.modalidad === 'presencial' ? 'Presencial' : 'En línea'}</td>
+                                <td>${esc(c.titulo || '—')}</td>
+                                <td class="num">${esc(valor(c.minutos))}</td>
+                                <td class="num">${esc(valor(c.asistentes))}</td>
+                                <td class="num">${esc(valor(c.tarde))}</td>
+                            </tr>`).join('')}</tbody></table></div>` : '<p class="text-xs text-white/50 muted">No hubo clases este mes.</p>'}
+                    </div>`);
+
+                const alumnos = detalle.alumnos || [];
+                partes.push(`
+                    <div class="feature-card">
+                        <h3 class="font-semibold text-sm mb-2">Alumnos (${alumnos.length})</h3>
+                        ${alumnos.length ? `<div class="overflow-x-auto"><table class="tabla">
+                            <thead><tr><th>Alumno</th><th>Grupo</th><th class="num">En línea</th><th class="num">Presenciales</th><th class="num">Min. clase</th><th class="num">Veces tarde</th><th class="num">Ejercicios</th></tr></thead>
+                            <tbody>${alumnos.map((a) => `<tr>
+                                <td>${esc(a.nombre)}</td>
+                                <td>${esc(a.grupo || '—')}</td>
+                                <td class="num">${esc(valor(a.clases_en_linea))}</td>
+                                <td class="num">${esc(valor(a.clases_presenciales))}</td>
+                                <td class="num">${esc(valor(a.minutos_clase))}</td>
+                                <td class="num">${esc(valor(a.veces_tarde))}</td>
+                                <td class="num">${esc(valor(a.ejercicios))}</td>
+                            </tr>`).join('')}</tbody></table></div>` : '<p class="text-xs text-white/50 muted">Sin alumnos en este mes.</p>'}
+                    </div>`);
+            } else {
+                partes.push(`<p class="text-xs text-white/50 muted no-print">El detalle por clase y por alumno queda guardado cuando envías el informe del mes.</p>`);
+            }
+
+            document.getElementById('informe').innerHTML = partes.join('');
+        }
+
+        function nombreArchivo(ext) {
+            const persona = nombreProfesor().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/gi, '_').replace(/^_|_$/g, '');
+            return 'informe_' + actual.periodo.slice(0, 7) + '_' + (persona || 'profesor') + '.' + ext;
+        }
+
+        // ---------------------------------------------------------------
+        // Descarga en CSV (se abre en Excel): encabezado, textos, actividad
+        // y, si el informe ya se envió, el detalle por clase y por alumno.
+        // ---------------------------------------------------------------
+        function csvEscape(v) {
+            const s = String(v == null ? '' : v);
+            return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+        }
+
+        function construirCsv() {
+            const { periodo, fila, datos, detalle } = actual;
+            const lineas = [];
+            const fila_ = (...cols) => lineas.push(cols.map(csvEscape).join(','));
+
+            fila_('Informe mensual del profesor');
+            fila_('Profesor', nombreProfesor());
+            fila_('Correo', profile.email || '');
+            fila_('Mes', mesEnPalabras(periodo));
+            fila_('Estado', estadoTexto());
+            lineas.push('');
+
+            TEXTOS.forEach(([k, label]) => fila_(label, fila ? (fila[k] || '').trim() : ''));
+            if (fila && (fila.comentario || '').trim()) fila_('Comentario de supervisión', fila.comentario.trim());
+            lineas.push('');
+
+            fila_('Actividad del mes', 'Valor');
+            ACTIVIDAD.forEach(([k, label]) => fila_(label, datos[k] == null ? '' : datos[k]));
+            lineas.push('');
+
+            if (detalle) {
+                fila_('Clases dadas');
+                fila_('Fecha', 'Modalidad', 'Tema', 'Minutos', 'Asistentes', 'Llegaron tarde', 'Notas');
+                (detalle.clases || []).forEach((c) => fila_(formatearFecha(c.inicio), c.modalidad === 'presencial' ? 'Presencial' : 'En línea', c.titulo, c.minutos, c.asistentes, c.tarde, c.notas));
+                lineas.push('');
+
+                fila_('Alumnos');
+                fila_('Alumno', 'Grupo', 'Clases en línea', 'Clases presenciales', 'Minutos de clase', 'Veces tarde', 'Minutos tarde', 'Ejercicios');
+                (detalle.alumnos || []).forEach((a) => fila_(a.nombre, a.grupo, a.clases_en_linea, a.clases_presenciales, a.minutos_clase, a.veces_tarde, a.minutos_tarde, a.ejercicios));
+            }
+            return lineas.join('\n');
+        }
+
+        document.getElementById('csv-btn').addEventListener('click', () => {
+            if (!actual) return;
+            const csv = '﻿' + construirCsv(); // BOM para que Excel detecte UTF-8
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = nombreArchivo('csv');
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        });
+
+        // El navegador toma el título de la página como nombre del PDF al "Guardar como PDF".
+        document.getElementById('pdf-btn').addEventListener('click', () => {
+            if (!actual) return;
+            const tituloOriginal = document.title;
+            document.title = nombreArchivo('pdf').replace(/\.pdf$/, '');
+            window.print();
+            document.title = tituloOriginal;
+        });
+
+        document.getElementById('mes').addEventListener('change', (e) => cargarMes(e.target.value));
+
+        async function init() {
+            const { data } = await sb.auth.getSession();
+            session = data.session;
+            if (!session) { window.location.href = 'login.html?next=informe-mensual.html'; return; }
+
+            const { data: profileData, error: profileError } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
+            if (profileError || !profileData) { showError('No se pudo cargar tu perfil. Cierra sesión y vuelve a entrar.'); return; }
+            profile = profileData;
+
+            if (!profile.is_admin && profile.role !== 'profesor') {
+                showError('El informe mensual es solo para profesores.');
+                return;
+            }
+
+            llenarMeses();
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            cargarMes(document.getElementById('mes').value);
+        }
+        init();
+    </script>
+</body>
+</html>

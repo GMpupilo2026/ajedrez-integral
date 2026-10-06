@@ -47,6 +47,21 @@ Los usuarios con `profiles.is_admin` que hayan iniciado sesión ven en la págin
 La escritura está protegida por RLS (`public.soy_admin()`); ver
 `supabase/migrations/20261001000000_curso_contenido_adjuntos.sql`.
 
+## Informe mensual del profesor
+
+`informe-mensual.html` (enlace "📄 Descargar mi informe mensual" en el panel del profesor de
+`clases.html`) deja al profesor elegir un mes (el actual y los 12 anteriores) y descargarlo:
+
+- **Descargar PDF**: abre la impresión del navegador con una hoja limpia en blanco y negro
+  ("Guardar como PDF"); el archivo sale como `informe_AAAA-MM_Nombre.pdf`.
+- **Descargar Excel (CSV)**: textos del informe, actividad del mes y, si ya se envió, el detalle
+  por clase y por alumno.
+
+Si el informe del mes ya se envió, se descarga tal como quedó guardado (`informes_profesor.datos`
+y `detalle_informe_mensual()`). Si está en borrador o no se ha escrito, se descargan los textos
+del borrador y la actividad calculada hasta hoy con `actividad_profesor()`; el detalle por clase
+y por alumno solo existe una vez enviado. Solo ve su propio informe (RLS de `informes_profesor`).
+
 ## Uso
 
 Abre `index.html` en tu navegador. Tailwind se carga vía CDN, no requiere build.
